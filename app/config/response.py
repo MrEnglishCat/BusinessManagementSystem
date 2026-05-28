@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 
 class ResponseStatus(StrEnum):
@@ -10,7 +10,7 @@ class ResponseStatus(StrEnum):
     ERROR = "error"
 
 
-class BaseResponse:
+class BaseResponse(BaseModel):
     status: ResponseStatus
     message: str
     data: Any | None = None
@@ -19,38 +19,40 @@ class BaseResponse:
 
 
 class ResponseOk(BaseResponse):
-    status = ResponseStatus.OK
+    status: ResponseStatus = ResponseStatus.OK
     message: str = "Operation completed successfully"
 
 
 class ResponseWarning(BaseResponse):
-    status = ResponseStatus.WARNING
+    status: ResponseStatus = ResponseStatus.WARNING
     message: str = "Operation completed with warnings"
     warnings: list[str] = Field(default_factory=list)
 
 
 class ResponseError(BaseResponse):
-    status = ResponseStatus.ERROR
+    status: ResponseStatus = ResponseStatus.ERROR
     message: str = "Operation failed"
     errors: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ResponseFactory:
 
-    def ok(self, data: Any = None, message: str = "Success")->ResponseOk:
+    @staticmethod
+    def ok(data: Any = None, message: str = "Success") -> ResponseOk:
         return ResponseOk(data=data, message=message)
 
-     @staticmethod
+    @staticmethod
     def warning(
         data: Any = None,
         message: str = "Operation completed with warnings",
-        warnings: list[str] | None = None
+        warnings: list[str] | None = None,
     ) -> ResponseWarning:
-        return ResponseWarning(
-            message=message,
-            data=data,
-            warnings=warnings or []
-        )
+        return ResponseWarning(message=message, data=data, warnings=warnings or [])
 
-    def error(self, data:Any = None, message:str = "Operation failed",  errors:list[dict[str, Any]] = None): 
+    @staticmethod
+    def error(
+        data: Any = None,
+        message: str = "Operation failed",
+        errors: list[dict[str, Any]] = None,
+    ):
         return ResponseError(data=data, message=message, errors=errors)
