@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, status
 
 from app.config.response import ResponseFactory, ResponseOk, ResponseError
-from app.schemas.evaluation import EvaluationResponseSchema, EvaluationSchema
+from app.schemas.evaluation import EvaluationSchema
 
 evaluation_router = APIRouter(prefix="/evaluations", tags=["evaluations"])
 MOCK_EVALUATIONS = [
@@ -52,3 +52,19 @@ async def create_evaluation(evaluation: EvaluationSchema = Body(EvaluationSchema
         )
 
     return ResponseFactory.ok(data=evaluation, message=f"Evaluation  created")
+
+
+@evaluation_router.delete("/{evaluation_id}", response_model=ResponseOk | ResponseError)
+async def delete_evaluation(evaluation_id: int):
+
+    search = [item for item in MOCK_EVALUATIONS if item["id"] - 1 == evaluation_id]
+    if not search:
+        return ResponseFactory.error(
+            message=f"Evaluation with id {evaluation_id} not found",
+            errors=[{"type": "not_found", "id": evaluation_id}],
+        )
+    print(MOCK_EVALUATIONS)
+    if MOCK_EVALUATIONS:
+        del MOCK_EVALUATIONS[evaluation_id]
+
+    return ResponseFactory.ok(data=search, message="Success delete")
