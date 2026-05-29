@@ -4,5 +4,20 @@ meeting_router = APIRouter(prefix="/meetings", tags=["meetings"])
 
 
 @meeting_router.get("/")
-async def meeting():
+async def get_meetings():
+    return {"message": "Все оценки"}
+
+
+@meeting_router.get("/{meeting_id}")
+async def get_meetings_by_id(meeting_id):
+    return {"message": "Все оценки"}
+
+
+@meeting_router.post("/")
+async def post_meetings():
+    return {"message": "Все оценки"}
+
+
+@meeting_router.delete("/{meeting_id}")
+async def delete_meetings_by_id(meeting_id: int):
     return {"message": "Все оценки"}

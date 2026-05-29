@@ -21,7 +21,7 @@ async def get_evaluations(evaluations: list[dict] = Depends(get_evaluations_depe
 
 
 @evaluation_router.get("/{evaluation_id}", response_model=ResponseOk | ResponseError)
-async def get_evaluation_by_id(evaluation_id: int):
+async def get_evaluations_by_id(evaluation_id: int):
 
     evaluation = next((e for e in MOCK_EVALUATIONS if e["id"] == evaluation_id), None)
 
@@ -39,7 +39,7 @@ async def get_evaluation_by_id(evaluation_id: int):
 @evaluation_router.post(
     "/", status_code=status.HTTP_201_CREATED, response_model=ResponseOk | ResponseError
 )
-async def create_evaluation(evaluation: EvaluationSchema = Body(EvaluationSchema)):
+async def create_evaluations(evaluation: EvaluationSchema = Body(EvaluationSchema)):
 
     if not evaluation:
         return ResponseFactory.error(
@@ -55,7 +55,7 @@ async def create_evaluation(evaluation: EvaluationSchema = Body(EvaluationSchema
 
 
 @evaluation_router.delete("/{evaluation_id}", response_model=ResponseOk | ResponseError)
-async def delete_evaluation(evaluation_id: int):
+async def delete_evaluations(evaluation_id: int):
 
     search = [item for item in MOCK_EVALUATIONS if item["id"] - 1 == evaluation_id]
     if not search:
