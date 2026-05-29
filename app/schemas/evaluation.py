@@ -5,9 +5,9 @@ from datetime import datetime
 class EvaluationSchema(BaseModel):
     score: int
     comment: str
-    employee_id: int
-    reviewer_id: int
-    task_id: int
+    employee_id: int  # UserSchema
+    reviewer_id: int  # UserSchema
+    task_id: int  # TaskSchema
     created_at: datetime = Field(
         datetime, json_schema_extra={"example": "29.05.2026 23:23"}
     )
