@@ -2,7 +2,10 @@ from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Integer, String, DateTime
 from datetime import datetime
-from . import UserModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import UserModel
 
 
 class TeamModel(BaseAlchemyModel):
@@ -18,5 +21,5 @@ class TeamModel(BaseAlchemyModel):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    members: Mapped[UserModel] = relationship(UserModel, back_populates="team")
-    creator: Mapped[UserModel] = relationship(UserModel, foreign_keys=[created_by])
+    members: Mapped["UserModel"] = relationship("UserModel", back_populates="team")
+    creator: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[created_by])

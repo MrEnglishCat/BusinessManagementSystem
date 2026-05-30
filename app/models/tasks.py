@@ -3,7 +3,10 @@ from enum import Enum, StrEnum
 from sqlalchemy import ForeignKey, Integer, Text, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
-from . import UserModel, TaskCommentModel, EvaluationModel, TeamModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import UserModel, TaskCommentModel, EvaluationModel, TeamModel
 
 
 class TaskStatus(StrEnum):
@@ -33,18 +36,18 @@ class TaskModel(BaseAlchemyModel):
     )
 
     # Relationships
-    creator: Mapped[UserModel] = relationship(
-        UserModel, foreign_keys=[created_by], back_populates="created_tasks"
+    creator: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[created_by], back_populates="created_tasks"
     )
-    assignee: Mapped[UserModel] = relationship(
-        UserModel, foreign_keys=[assignee_id], back_populates="assigned_tasks"
+    assignee: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[assignee_id], back_populates="assigned_tasks"
     )
-    team: Mapped[TeamModel] = relationship(TeamModel)
-    comments: Mapped[TaskCommentModel] = relationship(
-        TaskCommentModel, back_populates="task"
+    team: Mapped["TeamModel"] = relationship("TeamModel")
+    comments: Mapped["TaskCommentModel"] = relationship(
+        "TaskCommentModel", back_populates="task"
     )
-    evaluations: Mapped[EvaluationModel] = relationship(
-        EvaluationModel, back_populates="task"
+    evaluations: Mapped["EvaluationModel"] = relationship(
+        "EvaluationModel", back_populates="task"
     )
 
 
@@ -58,5 +61,5 @@ class TaskCommentModel(BaseAlchemyModel):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    task: Mapped[TaskModel] = relationship(TaskModel, back_populates="comments")
-    user: Mapped[UserModel] = relationship(UserModel)
+    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates="comments")
+    user: Mapped["UserModel"] = relationship("UserModel")

@@ -2,7 +2,10 @@ from datetime import datetime
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, Table, Text, DateTime, ForeignKey
-from . import TeamModel, UserModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import TeamModel, UserModel
 
 meeting_participants = Table(
     "meeting_participants",
@@ -26,8 +29,8 @@ class MeetingModel(BaseAlchemyModel):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    creator: Mapped[UserModel] = relationship(UserModel, foreign_keys=[created_by])
-    team: Mapped[TeamModel] = relationship(TeamModel)
-    participants: Mapped[UserModel] = relationship(
-        UserModel, secondary=meeting_participants, back_populates="meetings"
+    creator: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[created_by])
+    team: Mapped["TeamModel"] = relationship("TeamModel")
+    participants: Mapped["UserModel"] = relationship(
+        "UserModel", secondary=meeting_participants, back_populates="meetings"
     )

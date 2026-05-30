@@ -2,8 +2,11 @@ from app.config.db import BaseAlchemyModel
 from enum import StrEnum, Enum
 from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
 
 
 class UserRole(StrEnum):
@@ -29,23 +32,23 @@ class UserModel(BaseAlchemyModel):
     )
 
     # Relationships
-    team = relationship(TeamModel, back_populates="members")
+    team = relationship("TeamModel", back_populates="members")
     created_tasks = relationship(
-        TaskModel, foreign_keys="Task.created_by", back_populates="creator"
+        "TaskModel", foreign_keys="Task.created_by", back_populates="creator"
     )
     assigned_tasks = relationship(
-        TaskModel, foreign_keys="Task.assignee_id", back_populates="assignee"
+        "TaskModel", foreign_keys="Task.assignee_id", back_populates="assignee"
     )
     evaluations = relationship(
-        EvaluationModel,
+        "EvaluationModel",
         foreign_keys="Evaluation.employee_id",
         back_populates="employee",
     )
     given_evaluations = relationship(
-        EvaluationModel,
+        "EvaluationModel",
         foreign_keys="Evaluation.reviewer_id",
         back_populates="reviewer",
     )
     meetings = relationship(
-        MeetingModel, secondary="meeting_participants", back_populates="participants"
+        "MeetingModel", secondary="meeting_participants", back_populates="participants"
     )

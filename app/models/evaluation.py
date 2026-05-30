@@ -2,7 +2,10 @@ from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import Integer, Text, DateTime, ForeignKey
 from datetime import datetime
-from . import UserModel, TaskModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import UserModel, TaskModel
 
 
 class EvaluationModel(BaseAlchemyModel):
@@ -17,10 +20,10 @@ class EvaluationModel(BaseAlchemyModel):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    employee: Mapped[UserModel] = relationship(
-        UserModel, foreign_keys=[employee_id], back_populates="evaluations"
+    employee: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[employee_id], back_populates="evaluations"
     )
-    reviewer: Mapped[UserModel] = relationship(
-        UserModel, foreign_keys=[reviewer_id], back_populates="given_evaluations"
+    reviewer: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[reviewer_id], back_populates="given_evaluations"
     )
-    task: Mapped[TaskModel] = relationship(TaskModel, back_populates="evaluations")
+    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates="evaluations")
