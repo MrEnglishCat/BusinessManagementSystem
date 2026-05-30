@@ -2,6 +2,7 @@ from pydantic_settings import SettingsConfigDict, BaseSettings
 
 
 class Settings(BaseSettings):
+    MODE: str
 
     DB_USERNAME: str
     DB_PASSWORD: str
@@ -11,7 +12,19 @@ class Settings(BaseSettings):
 
     @property
     def DB_URL(self):
+
+        if self.MODE == "DEBUG":
+            return "sqlite:///test.db"
+
         return f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def SYNC_DB_URL(self):
+
+        if self.MODE == "DEBUG":
+            return "sqlite:///test.db"
+
+        return f"postgresql+psycopg2://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     model_config = SettingsConfigDict(env_file=".env")
 
