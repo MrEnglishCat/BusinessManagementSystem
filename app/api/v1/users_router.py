@@ -18,6 +18,6 @@ async def get_users_by_id(user_id: int):
     return {"message": "Все оценки"}
 
 
-@users_router("/{user_id}")
+@users_router.delete("/{user_id}")
 async def delete_users_by_id(user_id: int):
     return {"message": "Все оценки"}
