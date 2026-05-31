@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
-from enum import StrEnum
+from enum import Enum
 from datetime import datetime
 
 from app.schemas.teams import TeamSchema
 from app.schemas.users import UserSchema
 
 
-class TaskStatus(StrEnum):
+class TaskStatus(str, Enum):
     OPEN = "open"
     IN_PROGRES = "in_progres"
     COMPLETED = "completed"

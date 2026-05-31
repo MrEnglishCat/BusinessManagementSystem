@@ -37,7 +37,7 @@ class UserModel(BaseAlchemyModel):
 
     # Relationships
     team: Mapped["TeamModel"] = relationship(
-        "TeamModel", back_populates="members", foreign_keys="Team.id"
+        "TeamModel", back_populates="members", foreign_keys="TeamModel.id"
     )
     created_tasks: Mapped["TaskModel"] = relationship(
         "TaskModel", foreign_keys="TaskModel.created_by", back_populates="creator"
@@ -47,12 +47,12 @@ class UserModel(BaseAlchemyModel):
     )
     evaluations: Mapped["EvaluationModel"] = relationship(
         "EvaluationModel",
-        foreign_keys="Evaluation.employee_id",
+        foreign_keys="EvaluationModel.employee_id",
         back_populates="employee",
     )
     given_evaluations: Mapped["EvaluationModel"] = relationship(
         "EvaluationModel",
-        foreign_keys="Evaluation.reviewer_id",
+        foreign_keys="EvaluationModel.reviewer_id",
         back_populates="reviewer",
     )
     meetings: Mapped["MeetingModel"] = relationship(
