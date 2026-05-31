@@ -21,5 +21,7 @@ class TeamModel(BaseAlchemyModel):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    members: Mapped["UserModel"] = relationship("UserModel", back_populates="team")
+    members: Mapped["UserModel"] = relationship(
+        "UserModel", back_populates="team", foreign_keys="UserModel.team_id"
+    )
     creator: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[created_by])

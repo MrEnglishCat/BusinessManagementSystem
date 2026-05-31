@@ -37,7 +37,7 @@ class UserModel(BaseAlchemyModel):
 
     # Relationships
     team: Mapped["TeamModel"] = relationship(
-        "TeamModel", back_populates="members", foreign_keys="TeamModel.id"
+        "TeamModel", back_populates="members", foreign_keys=team_id
     )
     created_tasks: Mapped["TaskModel"] = relationship(
         "TaskModel", foreign_keys="TaskModel.created_by", back_populates="creator"
