@@ -27,19 +27,23 @@ class UserModel(BaseAlchemyModel):
     full_name: Mapped[str] = mapped_column(String, nullable=True)
     role: Mapped[UserRole] = mapped_column(DB_Enum(UserRole), default=UserRole.USER)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
+    team_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("teams.id"), nullable=True
+    )
     created_at: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[int] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     # Relationships
-    team: Mapped["TeamModel"] = relationship("TeamModel", back_populates="members")
+    team: Mapped["TeamModel"] = relationship(
+        "TeamModel", back_populates="members", foreign_keys="Team.id"
+    )
     created_tasks: Mapped["TaskModel"] = relationship(
-        "TaskModel", foreign_keys="Task.created_by", back_populates="creator"
+        "TaskModel", foreign_keys="TaskModel.created_by", back_populates="creator"
     )
     assigned_tasks: Mapped["TaskModel"] = relationship(
-        "TaskModel", foreign_keys="Task.assignee_id", back_populates="assignee"
+        "TaskModel", foreign_keys="TaskModel.assignee_id", back_populates="assignee"
     )
     evaluations: Mapped["EvaluationModel"] = relationship(
         "EvaluationModel",
