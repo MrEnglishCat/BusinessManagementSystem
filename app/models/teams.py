@@ -17,7 +17,7 @@ class TeamModel(BaseAlchemyModel):
     invite_code: Mapped[str] = mapped_column(
         String, unique=True, index=True, nullable=True
     )
-    created_by: Mapped[datetime] = mapped_column(Integer, ForeignKey("users.id"))
+    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships

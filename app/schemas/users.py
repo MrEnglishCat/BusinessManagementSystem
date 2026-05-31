@@ -3,19 +3,22 @@ from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
 
 from app.schemas.teams import TeamResponseScheme
-from enum import StrEnum
-class UserRole(StrEnum):
+from enum import Enum
+
+
+class UserRole(str, Enum):
     USER = "user"
     MANAGER = "manager"
     ADMIN = "admin"
 
-class UserSchema(BaseModel): 
-    email:EmailStr
-    username:str
-    hased_password:str
-    full_name:str
+
+class UserSchema(BaseModel):
+    email: EmailStr
+    username: str
+    hased_password: str
+    full_name: str
     role: UserRole
-    is_active:bool
+    is_active: bool
     team_id: TeamResponseScheme
 
     created_at: datetime = Field(
@@ -26,6 +29,5 @@ class UserSchema(BaseModel):
     )
 
 
-
 class UserResponseSchema(BaseModel):
-    if:int
+    id: int

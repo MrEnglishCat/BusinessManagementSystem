@@ -1,6 +1,6 @@
 from app.config.db import BaseAlchemyModel
-from enum import StrEnum, Enum
-from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey
+from enum import Enum
+from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey, Enum as DB_Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
 
 
-class UserRole(StrEnum):
+class UserRole(str, Enum):
     USER = "user"
     MANAGER = "manager"
     ADMIN = "admin"
@@ -18,37 +18,39 @@ class UserRole(StrEnum):
 class UserModel(BaseAlchemyModel):
     __tablename__ = "users"
 
-    id = mapped_column(Integer, primary_key=True, index=True)
-    email = mapped_column(String, unique=True, index=True, nullable=False)
-    username = mapped_column(String, unique=True, index=True, nullable=False)
-    hashed_password = mapped_column(String, nullable=False)
-    full_name = mapped_column(String, nullable=True)
-    role = mapped_column(Enum(UserRole), default=UserRole.USER)
-    is_active = mapped_column(Boolean, default=True)
-    team_id = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
-    created_at = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    username: Mapped[str] = mapped_column(
+        String, unique=True, index=True, nullable=False
+    )
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    full_name: Mapped[str] = mapped_column(String, nullable=True)
+    role: Mapped[UserRole] = mapped_column(DB_Enum(UserRole), default=UserRole.USER)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
+    created_at: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[int] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     # Relationships
-    team = relationship("TeamModel", back_populates="members")
-    created_tasks = relationship(
+    team: Mapped["TeamModel"] = relationship("TeamModel", back_populates="members")
+    created_tasks: Mapped["TaskModel"] = relationship(
         "TaskModel", foreign_keys="Task.created_by", back_populates="creator"
     )
-    assigned_tasks = relationship(
+    assigned_tasks: Mapped["TaskModel"] = relationship(
         "TaskModel", foreign_keys="Task.assignee_id", back_populates="assignee"
     )
-    evaluations = relationship(
+    evaluations: Mapped["EvaluationModel"] = relationship(
         "EvaluationModel",
         foreign_keys="Evaluation.employee_id",
         back_populates="employee",
     )
-    given_evaluations = relationship(
+    given_evaluations: Mapped["EvaluationModel"] = relationship(
         "EvaluationModel",
         foreign_keys="Evaluation.reviewer_id",
         back_populates="reviewer",
     )
-    meetings = relationship(
+    meetings: Mapped["MeetingModel"] = relationship(
         "MeetingModel", secondary="meeting_participants", back_populates="participants"
     )

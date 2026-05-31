@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Table, Text, DateTime, ForeignKey
+from sqlalchemy import Integer, String, Table, Text, DateTime, ForeignKey, Column
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 meeting_participants = Table(
     "meeting_participants",
     BaseAlchemyModel.metadata,
-    mapped_column("meeting_id", Integer, ForeignKey("meetings.id")),
-    mapped_column("user_id", Integer, ForeignKey("users.id")),
+    Column("meeting_id", Integer, ForeignKey("meetings.id")),
+    Column("user_id", Integer, ForeignKey("users.id")),
 )
 
 

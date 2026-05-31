@@ -1,6 +1,6 @@
 from app.config.db import BaseAlchemyModel
-from enum import Enum, StrEnum
-from sqlalchemy import ForeignKey, Integer, Text, DateTime, String
+from enum import Enum
+from sqlalchemy import ForeignKey, Integer, Text, DateTime, String, Enum as DB_Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from . import UserModel, TaskCommentModel, EvaluationModel, TeamModel
 
 
-class TaskStatus(StrEnum):
+class TaskStatus(str, Enum):
     OPEN = "open"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -22,7 +22,7 @@ class TaskModel(BaseAlchemyModel):
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus), default=TaskStatus.OPEN
+        DB_Enum(TaskStatus), default=TaskStatus.OPEN
     )
     deadline: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
