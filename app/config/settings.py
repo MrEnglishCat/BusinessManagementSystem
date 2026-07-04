@@ -10,6 +10,14 @@ class Settings(BaseSettings):
     DB_PORT: str
     DB_NAME: str
 
+    GENERATE_USERS_COUNT: int
+    GENERATE_TEAMS_COUNT: int
+    GENERATE_TASKS_COUNT: int
+    GENERATE_COMMENTS_PER_TASK_MIN: int
+    GENERATE_COMMENTS_PER_TASK_MAX: int
+    GENERATE_MEETINGS_COUNT: int
+    GENERATE_EVALUATIONS_COUNT: int
+
     @property
     def DB_URL(self):
 
