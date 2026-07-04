@@ -66,7 +66,14 @@ class TaskCommentModel(BaseAlchemyModel):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.id"))
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+    )
 
     # Relationships
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates="comments")

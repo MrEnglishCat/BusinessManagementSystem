@@ -37,3 +37,20 @@ class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
         title="Updated at",
         json_schema_extra={"example": "29.05.2026 23:23"},
     )
+
+
+class TaskCommentBaseSchema(BaseModel):
+    content: str = Field(title="Content")
+    task_id: int = Field(title="Task ID")
+    user_id: int = Field(title="User ID")
+
+
+class TaskCommentResponse(TaskBaseSchema, TaskIDSchema):
+    created_at: datetime = Field(
+        title="Created at",
+        json_schema_extra={"example": "29.05.2026 23:23"},
+    )
+    updated_at: datetime = Field(
+        title="Updated at",
+        json_schema_extra={"example": "29.05.2026 23:23"},
+    )
