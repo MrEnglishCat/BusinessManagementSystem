@@ -1,5 +1,5 @@
 from .base_repository import BaseRepository
-from ..models.evaluation import EvaluationModel
+from ..models import EvaluationModel
 
 
 class EvaluationRepository(BaseRepository):

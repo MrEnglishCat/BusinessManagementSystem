@@ -1,5 +1,5 @@
 from .base_repository import BaseRepository
-from ..models.meetings import MeetingModel
+from ..models import MeetingModel
 
 
 class MeetingRepository(BaseRepository):
