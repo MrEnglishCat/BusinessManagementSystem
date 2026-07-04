@@ -18,14 +18,30 @@ meeting_participants = Table(
 class MeetingModel(BaseAlchemyModel):
     __tablename__ = "meetings"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    start_time: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    end_time: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    start_time: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    end_time: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
     location: Mapped[str] = mapped_column(String, nullable=True)
-    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
+    created_by: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+    )
+    team_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("teams.id"),
+        nullable=True,
+    )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
