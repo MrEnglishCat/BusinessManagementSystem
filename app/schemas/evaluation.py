@@ -9,9 +9,9 @@ class EvaluationIDSchema(BaseModel):
 class EvaluationBaseSchema(BaseModel):
     score: int = Field(title="Score")
     comment: str = Field(title="Comment")
-    employee_id: int = Field(title="Employee ID")  # UserSchema
-    reviewer_id: int = Field(title="Reviewer ID")  # UserSchema
-    task_id: int = Field(title="Task ID")  # TaskSchema
+    employee_id: int = Field(title="Employee")  # UserSchema
+    reviewer_id: int = Field(title="Reviewer")  # UserSchema
+    task_id: int = Field(title="Task")  # TaskSchema
 
 
 class EvaluationResponseSchema(

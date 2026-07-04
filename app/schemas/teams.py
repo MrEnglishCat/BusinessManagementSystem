@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class TeamIDSchema(BaseModel):
-    id: int = Field(title="Team ID")
+    id: int = Field(title="Team")
 
 
 class TeamBaseSchema(BaseModel):

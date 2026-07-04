@@ -20,7 +20,7 @@ class UserBaseSchema(BaseModel):
 
 
 class UserIDSchema(BaseModel):
-    id: int = Field(title="User ID")
+    id: int = Field(title="User")
 
 
 class UserCreateSchema(UserBaseSchema):

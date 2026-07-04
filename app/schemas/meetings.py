@@ -17,7 +17,7 @@ class MeetingBaseSchema(BaseModel):
     )
     location: str = Field(title="Location")
     created_by: int = Field(title="Created by")
-    team_id: int = Field(title="Team ID")
+    team_id: int = Field(title="Team")
 
 
 class MeetingResponseSchema(MeetingBaseSchema, MeetingIDSchema):

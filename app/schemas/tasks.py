@@ -25,7 +25,7 @@ class TaskBaseSchema(BaseModel):
     )
     created_by: int = Field(title="Createt by")
     assignee_id: int = Field(title="Assignee")
-    team_id: int = Field(title="Team ID")
+    team_id: int = Field(title="Team")
 
 
 class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
@@ -41,11 +41,11 @@ class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
 
 class TaskCommentBaseSchema(BaseModel):
     content: str = Field(title="Content")
-    task_id: int = Field(title="Task ID")
-    user_id: int = Field(title="User ID")
+    task_id: int = Field(title="Task")
+    user_id: int = Field(title="User")
 
 
-class TaskCommentResponse(TaskBaseSchema, TaskIDSchema):
+class TaskCommentResponseSchema(TaskCommentBaseSchema, TaskIDSchema):
     created_at: datetime = Field(
         title="Created at",
         json_schema_extra={"example": "29.05.2026 23:23"},
