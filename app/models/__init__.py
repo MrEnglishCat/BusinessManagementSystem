@@ -1,7 +1,7 @@
 from .evaluation import EvaluationModel
-from .meetings import MeetingModel
-from .tasks import TaskModel, TaskCommentModel
-from .users import UserModel
+from .meetings import MeetingModel, meeting_participants
+from .tasks import TaskModel, TaskCommentModel, TaskStatus
+from .users import UserModel, UserRole
 from .teams import TeamModel
 
 __all__ = [

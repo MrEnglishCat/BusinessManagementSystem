@@ -1,7 +1,7 @@
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Integer, String, DateTime
-from datetime import datetime
+from sqlalchemy import ForeignKey, Integer, String, DateTime, TIMESTAMP
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,11 +17,24 @@ class TeamModel(BaseAlchemyModel):
     invite_code: Mapped[str] = mapped_column(
         String, unique=True, index=True, nullable=True
     )
-    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_by: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=True
+    )
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+    )
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
 
     # Relationships
     members: Mapped["UserModel"] = relationship(
         "UserModel", back_populates="team", foreign_keys="UserModel.team_id"
     )
     creator: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[created_by])
+
+    def __str__(self):
+        return self.name

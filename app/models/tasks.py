@@ -2,7 +2,7 @@ from app.config.db import BaseAlchemyModel
 from enum import Enum
 from sqlalchemy import ForeignKey, Integer, Text, DateTime, String, Enum as DB_Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -24,15 +24,20 @@ class TaskModel(BaseAlchemyModel):
     status: Mapped[TaskStatus] = mapped_column(
         DB_Enum(TaskStatus), default=TaskStatus.OPEN
     )
-    deadline: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    deadline: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     assignee_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=True
     )
     team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+    )
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
     # Relationships

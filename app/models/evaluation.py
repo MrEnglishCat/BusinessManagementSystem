@@ -1,7 +1,7 @@
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import Integer, Text, DateTime, ForeignKey
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,7 +17,15 @@ class EvaluationModel(BaseAlchemyModel):
     employee_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     reviewer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+    )
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
 
     # Relationships
     employee: Mapped["UserModel"] = relationship(
