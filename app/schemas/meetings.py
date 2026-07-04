@@ -1,26 +1,29 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.schemas.users import UserSchema
-from app.schemas.teams import TeamSchema
 
 
-class MeetingSchema(BaseModel):
-    title: str
-    description: str
+class MeetingIDSchema(BaseModel):
+    id: int = Field(title="Meeting ID")
+
+
+class MeetingBaseSchema(BaseModel):
+    title: str = Field(title="Title")
+    description: str = Field(title="Description")
     start_time: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "31.07.2026 23:23"}
+        title="Start time", json_schema_extra={"example": "31.07.2026 23:23"}
     )
     end_time: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "01.08.2026 23:23"}
+        title="End time", json_schema_extra={"example": "01.08.2026 23:23"}
     )
-    location: str
-    created_by: UserSchema
-    team_id: TeamSchema
-    user_id: UserSchema
+    location: str = Field(title="Location")
+    created_by: int = Field(title="Created by")
+    team_id: int = Field(title="Team ID")
+
+
+class MeetingResponseSchema(MeetingBaseSchema, MeetingIDSchema):
     created_at: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "29.05.2026 23:23"}
+        title="Created at", json_schema_extra={"example": "29.05.2026 23:23"}
     )
-
-
-class MeetingResponseSchema(MeetingSchema, BaseModel):
-    id: int
+    updated_at: datetime = Field(
+        title="Updated at", json_schema_extra={"example": "29.05.2026 23:23"}
+    )

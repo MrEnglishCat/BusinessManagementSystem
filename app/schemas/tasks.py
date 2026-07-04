@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
 
-from app.schemas.teams import TeamSchema
-from app.schemas.users import UserSchema
+from app.schemas.teams import TeamIDSchema
+from app.schemas.users import UserIDSchema
 
 
 class TaskStatus(str, Enum):
@@ -12,23 +12,28 @@ class TaskStatus(str, Enum):
     COMPLETED = "completed"
 
 
-class TaskSchema(BaseModel):
-    title: str
-    description: str
-    status: TaskStatus
-    deadlite: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "29.05.2026 23:23"}
+class TaskIDSchema(BaseModel):
+    id: int = Field(title="Task ID")
+
+
+class TaskBaseSchema(BaseModel):
+    title: str = Field(title="Title")
+    description: str = Field(title="Description")
+    status: TaskStatus = Field(title="Status")
+    deadline: datetime = Field(
+        title="Deadline", json_schema_extra={"example": "29.05.2026 23:23"}
     )
-    created_by: UserSchema
-    assignee_id: UserSchema
-    team_id: TeamSchema
+    created_by: int = Field(title="Createt by")
+    assignee_id: int = Field(title="Assignee")
+    team_id: int = Field(title="Team ID")
+
+
+class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
     created_at: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "29.05.2026 23:23"}
+        title="Created at",
+        json_schema_extra={"example": "29.05.2026 23:23"},
     )
     updated_at: datetime = Field(
-        default_factory=datetime, json_schema_extra={"example": "29.05.2026 23:23"}
+        title="Updated at",
+        json_schema_extra={"example": "29.05.2026 23:23"},
     )
-
-
-class TaskResponseSchema(TaskSchema, BaseModel):
-    id: int
