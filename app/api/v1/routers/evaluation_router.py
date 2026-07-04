@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, status
 
 from app.config.response import ResponseFactory, ResponseOk, ResponseError
-from app.schemas.evaluation import EvaluationSchema
+from app.schemas.evaluation import EvaluationBaseSchema
 
 evaluation_router = APIRouter(prefix="/evaluations", tags=["evaluations"])
 MOCK_EVALUATIONS = [
@@ -39,7 +39,9 @@ async def get_evaluations_by_id(evaluation_id: int):
 @evaluation_router.post(
     "/", status_code=status.HTTP_201_CREATED, response_model=ResponseOk | ResponseError
 )
-async def create_evaluations(evaluation: EvaluationSchema = Body(EvaluationSchema)):
+async def create_evaluations(
+    evaluation: EvaluationBaseSchema = Body(EvaluationBaseSchema),
+):
 
     if not evaluation:
         return ResponseFactory.error(
