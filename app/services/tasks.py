@@ -1,10 +1,7 @@
 from .base import BaseService
-from ..repository import TaskRepository, TaskCommentRepository
 
 
-class TaskService(BaseService):
-    repository = TaskRepository
+class TaskService(BaseService): ...
 
 
-class TaskCommentService(BaseService):
-    repository = TaskCommentRepository
+class TaskCommentService(BaseService): ...

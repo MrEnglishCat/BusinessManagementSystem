@@ -22,6 +22,7 @@ async def get_session():
             await session.rollback()
             raise
         finally:
+            await session.commit()
             await session.close()
 
 

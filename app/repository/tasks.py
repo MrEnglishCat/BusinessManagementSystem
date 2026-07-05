@@ -1,3 +1,5 @@
+from sqlalchemy import delete
+
 from .base_repository import BaseRepository
 from ..models import TaskModel, TaskCommentModel
 
