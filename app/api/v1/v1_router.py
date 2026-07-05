@@ -4,6 +4,7 @@ from . import (
     evaluation_router,
     meeting_router,
     tasks_router,
+    task_comments_router,
     teams_router,
     users_router,
 )
@@ -15,6 +16,7 @@ v1_router = APIRouter(
 v1_router.include_router(evaluation_router)
 v1_router.include_router(meeting_router)
 v1_router.include_router(tasks_router)
+v1_router.include_router(task_comments_router)
 v1_router.include_router(teams_router)
 v1_router.include_router(users_router)
 v1_router.include_router(generator_router)
