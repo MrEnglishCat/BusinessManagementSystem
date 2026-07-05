@@ -24,13 +24,13 @@ class UserModel(BaseAlchemyModel):
         index=True,
     )
     email: Mapped[str] = mapped_column(
-        String,
+        String(254),
         unique=True,
         index=True,
         nullable=False,
     )
     username: Mapped[str] = mapped_column(
-        String,
+        String(255),
         unique=True,
         index=True,
         nullable=False,
@@ -39,11 +39,11 @@ class UserModel(BaseAlchemyModel):
         String,
         nullable=False,
     )
-    full_name: Mapped[str] = mapped_column(String, nullable=True)
+    full_name: Mapped[str] = mapped_column(String(500))
     role: Mapped[UserRole] = mapped_column(DB_Enum(UserRole), default=UserRole.USER)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     team_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("teams.id"), nullable=True
+        Integer, ForeignKey("teams.id", ondelete="SET NULL")
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

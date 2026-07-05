@@ -10,8 +10,16 @@ if TYPE_CHECKING:
 meeting_participants = Table(
     "meeting_participants",
     BaseAlchemyModel.metadata,
-    Column("meeting_id", Integer, ForeignKey("meetings.id")),
-    Column("user_id", Integer, ForeignKey("users.id")),
+    Column(
+        "meeting_id",
+        Integer,
+        ForeignKey("meetings.id", ondelete="CASCADE"),
+    ),
+    Column(
+        "user_id",
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+    ),
 )
 
 
@@ -24,7 +32,7 @@ class MeetingModel(BaseAlchemyModel):
         index=True,
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text)
     start_time: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
@@ -32,15 +40,12 @@ class MeetingModel(BaseAlchemyModel):
         DateTime(timezone=True),
         nullable=False,
     )
-    location: Mapped[str] = mapped_column(String, nullable=True)
+    location: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("users.id"),
+        Integer, ForeignKey("users.id"), nullable=False
     )
     team_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("teams.id"),
-        nullable=True,
+        Integer, ForeignKey("teams.id"), nullable=False
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

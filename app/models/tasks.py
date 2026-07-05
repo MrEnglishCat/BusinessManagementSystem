@@ -19,20 +19,17 @@ class TaskModel(BaseAlchemyModel):
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text)
     status: Mapped[TaskStatus] = mapped_column(
         DB_Enum(TaskStatus), default=TaskStatus.OPEN
     )
     deadline: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
-        nullable=True,
     )
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    assignee_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
-    )
-    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
+    assignee_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
+    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"))
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
@@ -64,8 +61,16 @@ class TaskCommentModel(BaseAlchemyModel):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.id"))
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
+    task_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("tasks.id"),
+        nullable=False,
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

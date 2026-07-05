@@ -12,13 +12,16 @@ class TeamModel(BaseAlchemyModel):
     __tablename__ = "teams"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
-    description: Mapped[str] = mapped_column(String, nullable=True)
-    invite_code: Mapped[str] = mapped_column(
-        String, unique=True, index=True, nullable=True
+    name: Mapped[str] = mapped_column(
+        String(255), unique=True, index=True, nullable=False
     )
+    description: Mapped[str] = mapped_column(String)
+    invite_code: Mapped[str] = mapped_column(String(150), unique=True, index=True)
     created_by: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+        unique=True,
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
