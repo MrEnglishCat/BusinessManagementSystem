@@ -3,12 +3,17 @@ from crudadmin import CRUDAdmin, RedisConfig
 from app.config.db import get_session
 from app.models.evaluation import EvaluationModel
 from app.models.meetings import MeetingModel
-from app.models.tasks import TaskModel
+from app.models.tasks import TaskCommentModel, TaskModel
 from app.models.teams import TeamModel
 from app.models.users import UserModel
 from app.schemas.evaluation import EvaluationBaseSchema, EvaluationResponseSchema
 from app.schemas.meetings import MeetingBaseSchema, MeetingResponseSchema
-from app.schemas.tasks import TaskBaseSchema, TaskResponseSchema
+from app.schemas.tasks import (
+    TaskBaseSchema,
+    TaskCommentBaseSchema,
+    TaskCommentResponseSchema,
+    TaskResponseSchema,
+)
 from app.schemas.teams import TeamBaseSchema, TeamResponseSchema
 from app.schemas.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
 
@@ -20,7 +25,7 @@ admin = CRUDAdmin(
     redis_config=redis_config,
     initial_admin={
         "username": "admin",
-        "password": "admin",  # В продакшене задать надежный пароль!
+        "password": "admin",
     },
 )
 admin.add_view(
@@ -29,7 +34,7 @@ admin.add_view(
     update_schema=UserBaseSchema,
     select_schema=UserResponseSchema,
     allowed_actions={"view", "create", "update", "delete"},
-    display_field="username",
+    display_field="full_name",
 )
 admin.add_view(
     model=TeamModel,
@@ -58,5 +63,12 @@ admin.add_view(
     create_schema=EvaluationBaseSchema,
     update_schema=EvaluationBaseSchema,
     select_schema=EvaluationResponseSchema,
+    display_field="score",
+)
+admin.add_view(
+    model=TaskCommentModel,
+    create_schema=TaskCommentBaseSchema,
+    update_schema=TaskCommentBaseSchema,
+    select_schema=TaskCommentResponseSchema,
     display_field="score",
 )
