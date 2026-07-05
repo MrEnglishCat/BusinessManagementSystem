@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     DB_HOST: str
     DB_PORT: str
-    DB_NAME: str
+    BMS_DB_NAME: str
+    ADMIN_DB_NAME: str
 
     GENERATE_USERS_COUNT: int
     GENERATE_TEAMS_COUNT: int
@@ -19,12 +20,20 @@ class Settings(BaseSettings):
     GENERATE_EVALUATIONS_COUNT: int
 
     @property
-    def DB_URL(self):
+    def BMS_DB_URL(self):
 
         if self.MODE == "DEBUG":
             return "sqlite:///test.db"
 
-        return f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.BMS_DB_NAME}"
+
+    @property
+    def ADMIN_DB_URL(self):
+
+        if self.MODE == "DEBUG":
+            return "sqlite:///test.db"
+
+        return f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.ADMIN_DB_NAME}"
 
     @property
     def SYNC_DB_URL(self):
@@ -32,7 +41,7 @@ class Settings(BaseSettings):
         if self.MODE == "DEBUG":
             return "sqlite:///test.db"
 
-        return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.BMS_DB_URL}"
 
     model_config = SettingsConfigDict(env_file=".env")
 

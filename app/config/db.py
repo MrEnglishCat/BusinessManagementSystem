@@ -2,7 +2,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from .settings import settings
 
-async_engine_db = create_async_engine(settings.DB_URL, echo=True)
+async_engine_db = create_async_engine(settings.BMS_DB_URL, echo=True)
 
 
 AsyncSession = async_sessionmaker(
