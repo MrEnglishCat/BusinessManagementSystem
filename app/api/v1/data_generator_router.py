@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Body, HTTPException, status, Depends
 import asyncio
-from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.db import get_session
-from app.config.response import ResponseFactory
+from app.config.response import BaseResponse, ResponseFactory
 from app.config.data_generator.generator import (
     run_generate,
 )
+from app.dependencies.service import get_service
+from app.schemas import TaskCommentResponseSchema
+from app.services import BaseService
+from app.utils.enums_service import ServiceTypeEnum
 
 generator_router = APIRouter(tags=["data_generator"])
-
-
-class GeneratorScheme(BaseModel):
-    name: str
 
 
 @generator_router.post("/data_generate")
@@ -25,7 +25,28 @@ async def generate_data(
     return ResponseFactory.ok(message=f"Success. Time: {time.monotonic() - start}")
 
 
-@generator_router.post("/clear_tables")
-async def clear_tables(session=Depends(get_session)):
+@generator_router.post(
+    "/clear_tables",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def clear_tables(
+    session: AsyncSession = Depends(get_session),
+):
+
+    task_comment_service = get_service(service_name=ServiceTypeEnum.task_comment)
+    task_service = get_service(service_name=ServiceTypeEnum.task_comment)
+    meeting_service = get_service(service_name=ServiceTypeEnum.task_comment)
+    evaluation_service = get_service(service_name=ServiceTypeEnum.task_comment)
+    team_service = get_service(service_name=ServiceTypeEnum.task_comment)
+    user_comment_service = get_service(service_name=ServiceTypeEnum.task_comment)
+
+    service_list = [
+        get_service(service_name=service_type) for service_type in ServiceTypeEnum
+    ]
+    print(*service_list, sep="\n")
+    for service in service_list:
+        rowcount = await service.delete_all(session=session)
+        print(service, rowcount)
 
     return ResponseFactory.ok()
