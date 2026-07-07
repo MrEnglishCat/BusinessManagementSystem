@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-task_comments_router = APIRouter(prefix="/task_comments", tags=["task_comments"])
+task_comments_router = APIRouter(prefix="/task_comments", tags=["Task comments"])
 
 
 @task_comments_router.get("/")

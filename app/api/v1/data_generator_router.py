@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException, status, Depends
+from fastapi import APIRouter, status, Depends
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.db import get_session
@@ -7,11 +7,9 @@ from app.config.data_generator.generator import (
     run_generate,
 )
 from app.dependencies.service import get_service
-from app.schemas import TaskCommentResponseSchema
-from app.services import BaseService
 from app.utils.enums_service import ServiceTypeEnum
 
-generator_router = APIRouter(tags=["data_generator"])
+generator_router = APIRouter(tags=["Data generator"])
 
 
 @generator_router.post("/data_generate")
