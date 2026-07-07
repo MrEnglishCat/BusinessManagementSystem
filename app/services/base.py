@@ -16,8 +16,12 @@ class BaseService(ABC):
     ):
         self.repository = repository
 
-    async def get(self, session: AsyncSession, **filter_by):
-        result = await self.repository.select(session=session, **filter_by)
+    async def get_one(self, session: AsyncSession, **filter_by):
+        result = await self.repository.select_one(session=session, **filter_by)
+        return result
+
+    async def get_all(self, session: AsyncSession):
+        result = await self.repository.select(session=session)
         return result
 
     async def add(self, session: AsyncSession, **values):

@@ -4,8 +4,9 @@ from pydantic import (
     EmailStr,
     Field,
     SecretStr,
-    model_validator,
+    field_validator,
 )
+
 from app.models.users import UserRole
 from app.utils.passwd import get_password_hash
 
@@ -19,32 +20,35 @@ class UserBaseSchema(BaseModel):
     team_id: int | None = Field(default=None, title="Team")
 
 
+class LoginSchema(BaseModel):
+    username: str
+    password: SecretStr
+
+
 class UserIDSchema(BaseModel):
     id: int = Field(title="User")
 
 
 class UserCreateSchema(UserBaseSchema):
-    password: SecretStr = Field(
-        title="Password",
-    )
     repeat_password: SecretStr = Field(
         exclude=True,
         title="Repeat password",
     )
+    password: SecretStr = Field(
+        title="Password",
+    )
 
-    @model_validator(mode="after")
-    def check_passwords_match(self):
-        if self.password.get_secret_value() != self.repeat_password.get_secret_value():
+    @field_validator("password", mode="after")
+    def check_passwords_match(cls, value, info):
+        if value.get_secret_value() != info.data["repeat_password"].get_secret_value():
             raise ValueError("Passwords do not match")
-        self.password = get_password_hash(self.password.get_secret_value())
-        return self
+        return get_password_hash(value.get_secret_value())
 
 
 class UserResponseSchema(
     UserBaseSchema,
     UserIDSchema,
 ):
-    Field(default_factory=datetime)
     created_at: datetime = Field(
         title="Created at",
         json_schema_extra={"example": "29.05.2026 23:23"},
