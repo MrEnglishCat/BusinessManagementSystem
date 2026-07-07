@@ -32,7 +32,7 @@ class ResponseWarning(BaseResponse):
 class ResponseError(BaseResponse):
     status: ResponseStatus = ResponseStatus.ERROR
     message: str = "Operation failed"
-    errors: list[dict[str, Any]] = Field(default_factory=list)
+    errors: list[dict[str, Any]] | None = Field(default_factory=list)
 
 
 class ResponseFactory:
@@ -53,6 +53,6 @@ class ResponseFactory:
     def error(
         data: Any = None,
         message: str = "Operation failed",
-        errors: list[dict[str, Any]] = None,
+        errors: list[dict[str, Any]] | None = None,
     ):
         return ResponseError(data=data, message=message, errors=errors)

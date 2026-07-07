@@ -4,7 +4,6 @@ from .settings import settings
 
 async_engine_db = create_async_engine(settings.BMS_DB_URL, echo=True)
 
-
 AsyncSession = async_sessionmaker(
     bind=async_engine_db,
     class_=AsyncSession,

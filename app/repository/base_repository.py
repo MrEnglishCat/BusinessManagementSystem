@@ -8,22 +8,35 @@ from app.config.db import get_session
 class BaseRepository:
     model = None
 
-    async def insert(self, session: AsyncSession, **values): ...
+    def generate_conditions(self, **filter_by):
+        return [
+            getattr(
+                self.model,
+                key,
+            )
+            == value
+            for key, value in filter_by.items()
+        ]
+
+    async def insert(self, session: AsyncSession, **values):
+        stmt = insert(self.model).values(**values)
+        insert_result = await session.execute(stmt)
+        return insert_result.scalar_one_or_none()
 
     async def select(self, session: AsyncSession, **filter_by):
-        stmt = select(self.model).where(**filter_by)
+        stmt = select(self.model).filter_by(**filter_by)
         search_result = await session.execute(stmt)
         return search_result.scalars().all()
 
-    async def select_one(self, session: AsyncSession, model_id: int):
-        stmt = select(self.model).where(self.model.id == model_id)
+    async def select_one(self, session: AsyncSession, **filter_by):
+        stmt = select(self.model).filter_by(**filter_by)
         search_result = await session.execute(stmt)
-        return search_result
+        return search_result.scalar()
 
     async def update(self, session: AsyncSession, **values): ...
 
     async def delete(self, session: AsyncSession, **filter_by):
-        stmt = delete(self.model).where(**filter_by)
+        stmt = delete(self.model).filter_by(**filter_by)
         result = await session.execute(stmt)
         return result.rowcount
 
@@ -35,4 +48,4 @@ class BaseRepository:
     async def delete_one(self, session: AsyncSession, model_id: int):
         stmt = delete(self.model).where(self.model.id == model_id)
         result = await session.execute(stmt)
-        return result.scalar()
+        return result.rowcount

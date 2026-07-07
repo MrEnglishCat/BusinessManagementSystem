@@ -19,25 +19,24 @@ from app.repository import (
     BaseRepository,
 )
 from fastapi import Body, HTTPException
-from app.schemas import ServiceName
 from app.utils.enums_service import ServiceTypeEnum
 
 
-def get_service(service_name: ServiceName = Body()) -> BaseService:
+def get_service(service_name: ServiceTypeEnum) -> BaseService:
     service_map = {
-        ServiceTypeEnum.evaluation: (EvaluationService, EvaluationRepository),
-        ServiceTypeEnum.meeting: (MeetingService, MeetingRepository),
-        ServiceTypeEnum.task: (TaskService, TaskRepository),
-        ServiceTypeEnum.task_comment: (
+        ServiceTypeEnum.EVALUATION: (EvaluationService, EvaluationRepository),
+        ServiceTypeEnum.MEETING: (MeetingService, MeetingRepository),
+        ServiceTypeEnum.TASK: (TaskService, TaskRepository),
+        ServiceTypeEnum.TASK_COMMENT: (
             TaskCommentService,
             TaskCommentRepository,
         ),  # 1  2 - meeting_partipints
-        ServiceTypeEnum.team: (TeamService, TeamRepository),
-        ServiceTypeEnum.user: (UserService, UserRepository),
+        ServiceTypeEnum.TEAM: (TeamService, TeamRepository),
+        ServiceTypeEnum.USER: (UserService, UserRepository),
     }
 
     service_map_result: tuple[BaseService, BaseRepository] = service_map.get(
-        service_name.name
+        service_name
     )
     if service_map_result is None:
         raise HTTPException(
@@ -46,3 +45,10 @@ def get_service(service_name: ServiceName = Body()) -> BaseService:
         )
     service, repository = service_map_result
     return service(repository())
+
+
+def get_service_dependency(service_name: ServiceTypeEnum):
+    def _get_service():
+        return get_service(service_name=service_name)
+
+    return _get_service

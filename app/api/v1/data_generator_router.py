@@ -33,14 +33,6 @@ async def generate_data(
 async def clear_tables(
     session: AsyncSession = Depends(get_session),
 ):
-
-    task_comment_service = get_service(service_name=ServiceTypeEnum.task_comment)
-    task_service = get_service(service_name=ServiceTypeEnum.task_comment)
-    meeting_service = get_service(service_name=ServiceTypeEnum.task_comment)
-    evaluation_service = get_service(service_name=ServiceTypeEnum.task_comment)
-    team_service = get_service(service_name=ServiceTypeEnum.task_comment)
-    user_comment_service = get_service(service_name=ServiceTypeEnum.task_comment)
-
     service_list = [
         get_service(service_name=service_type) for service_type in ServiceTypeEnum
     ]
