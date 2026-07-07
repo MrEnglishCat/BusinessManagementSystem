@@ -1,12 +1,13 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field
 from datetime import datetime
+from .base import BasePydanticModel
 
 
 class EvaluationIDSchema(BaseModel):
     id: int = Field(title="Evaluation ID")
 
 
-class EvaluationBaseSchema(BaseModel):
+class EvaluationBaseSchema(BasePydanticModel):
     score: int = Field(title="Score")
     comment: str = Field(title="Comment")
     employee_id: int = Field(title="Employee")  # UserSchema

@@ -41,7 +41,7 @@ class Settings(BaseSettings):
         if self.MODE == "DEBUG":
             return "sqlite:///test.db"
 
-        return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.BMS_DB_URL}"
+        return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.BMS_DB_NAME}"
 
     model_config = SettingsConfigDict(env_file=".env")
 

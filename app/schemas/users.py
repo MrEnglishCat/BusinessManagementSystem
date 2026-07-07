@@ -9,9 +9,10 @@ from pydantic import (
 
 from app.models.users import UserRole
 from app.utils.passwd import get_password_hash
+from .base import BasePydanticModel
 
 
-class UserBaseSchema(BaseModel):
+class UserBaseSchema(BasePydanticModel):
     email: EmailStr = Field(title="e-mail")
     username: str = Field(title="Username")
     full_name: str = Field(title="Full Name")
@@ -20,7 +21,7 @@ class UserBaseSchema(BaseModel):
     team_id: int | None = Field(default=None, title="Team")
 
 
-class LoginSchema(BaseModel):
+class LoginSchema(BasePydanticModel):
     username: str
     password: SecretStr
 
@@ -57,5 +58,3 @@ class UserResponseSchema(
         title="Updated at",
         json_schema_extra={"example": "29.05.2026 23:23"},
     )
-
-    model_config = {"from_attributes": True}

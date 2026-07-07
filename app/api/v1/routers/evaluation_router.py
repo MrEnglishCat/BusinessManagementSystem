@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Body, status
 from app.config.response import ResponseFactory, ResponseOk, ResponseError
 from app.schemas.evaluation import EvaluationBaseSchema
 
-evaluation_router = APIRouter(prefix="/evaluations", tags=["evaluations"])
+evaluation_router = APIRouter(prefix="/evaluations", tags=["Evaluations"])
 MOCK_EVALUATIONS = [
     {"id": 1, "name": "Оценка 1", "score": 85, "status": "completed"},
     {"id": 2, "name": "Оценка 2", "score": 92, "status": "completed"},

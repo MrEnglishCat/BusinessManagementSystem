@@ -19,7 +19,7 @@ class BaseRepository:
         ]
 
     async def insert(self, session: AsyncSession, **values):
-        stmt = insert(self.model).values(**values)
+        stmt = insert(self.model).values(**values).returning(self.model)
         insert_result = await session.execute(stmt)
         return insert_result.scalar_one_or_none()
 

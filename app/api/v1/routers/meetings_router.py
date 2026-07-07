@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-meeting_router = APIRouter(prefix="/meetings", tags=["meetings"])
+meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
 
 @meeting_router.get("/")

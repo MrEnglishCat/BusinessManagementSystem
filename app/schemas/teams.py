@@ -1,13 +1,13 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
+from datetime import datetime
+from .base import BasePydanticModel
 
 
 class TeamIDSchema(BaseModel):
     id: int = Field(title="Team")
 
 
-class TeamBaseSchema(BaseModel):
+class TeamBaseSchema(BasePydanticModel):
     name: str = Field(title="Name")
     description: str = Field(title="Description")
     invite_code: str = Field(title="Invite code")
