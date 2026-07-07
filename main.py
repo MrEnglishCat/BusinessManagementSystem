@@ -1,13 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.v1_router import v1_router
-
-# Настройка Redis
-from contextlib import asynccontextmanager
-from app.admin.setup import setup_admin
 from starlette.middleware.sessions import SessionMiddleware
+from app.api.v1.v1_router import v1_router
+from app.admin.setup import setup_admin
+from app.config.response import ResponseFactory
+from app.exceptions.exception_handlers import setup_exception_handlers
 
 bms_app = FastAPI(title="Business Management System")
+
+
 bms_app.add_middleware(
     SessionMiddleware,
     secret_key="your-very-secret-key-change-in-production",  # используйте переменную окружения
@@ -21,8 +23,12 @@ bms_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 setup_admin(bms_app)
+setup_exception_handlers(bms_app)
+
 bms_app.include_router(v1_router)
+
 
 """Управление договорами - Типы договоров - Редактирование типа. 
 

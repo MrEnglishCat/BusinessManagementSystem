@@ -21,7 +21,6 @@ class TeamModel(BaseAlchemyModel):
         Integer,
         ForeignKey("users.id"),
         nullable=False,
-        unique=True,
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
