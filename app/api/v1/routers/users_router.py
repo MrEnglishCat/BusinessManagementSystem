@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path, status
 from ....config.response import BaseResponse, ResponseFactory
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import UserBaseSchema, UserCreateSchema, UserResponseSchema
+from ....schemas import UserCreateSchema
 from ....config.db import get_session
 from ....services import BaseService
 from ....dependencies.service import get_service_dependency
@@ -47,6 +47,15 @@ async def get_users_by_id(
     return ResponseFactory.error(message=f"User not found")
 
 
-@users_router.delete("/{user_id}")
-async def delete_users_by_id(user_id: int):
-    return {"message": "Все оценки"}
+@users_router.delete(
+    "/{user_id}", status_code=status.HTTP_200_OK, response_model=BaseResponse
+)
+async def delete_users_by_id(
+    user_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    delete_user = await user_service.delete(session=session, **{"id": user_id})
+    if delete_user:
+        return ResponseFactory.ok(data=delete_user)
+    return ResponseFactory.error(message="User not found")

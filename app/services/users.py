@@ -19,3 +19,9 @@ class UserService(BaseService):
         if user:
             return UserResponseSchema.model_validate(user)
         return None
+
+    async def delete(self, session, **filter_by):
+        user = await super().delete(session, **filter_by)
+        if user:
+            return user
+        return None

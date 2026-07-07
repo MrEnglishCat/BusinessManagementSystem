@@ -36,6 +36,7 @@ async def clear_tables(
     service_list = [
         get_service(service_name=service_type) for service_type in ServiceTypeEnum
     ]
+    # DEVELOPMENT
     print(*service_list, sep="\n")
     for service in service_list:
         rowcount = await service.delete_all(session=session)
