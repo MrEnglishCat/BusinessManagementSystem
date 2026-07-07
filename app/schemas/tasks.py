@@ -1,9 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
-
-from app.schemas.teams import TeamIDSchema
-from app.schemas.users import UserIDSchema
+from .base import BasePydanticModel
 
 
 class TaskStatus(str, Enum):
@@ -16,7 +14,7 @@ class TaskIDSchema(BaseModel):
     id: int = Field(title="Task ID")
 
 
-class TaskBaseSchema(BaseModel):
+class TaskBaseSchema(BasePydanticModel):
     title: str = Field(title="Title")
     description: str = Field(title="Description")
     status: TaskStatus = Field(title="Status")
@@ -39,7 +37,7 @@ class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
     )
 
 
-class TaskCommentBaseSchema(BaseModel):
+class TaskCommentBaseSchema(BasePydanticModel):
     content: str = Field(title="Content")
     task_id: int = Field(title="Task")
     user_id: int = Field(title="User")
