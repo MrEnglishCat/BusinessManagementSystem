@@ -26,6 +26,10 @@ class LoginSchema(BasePydanticModel):
     password: SecretStr
 
 
+class AfterAuthUserSchema(BasePydanticModel):
+    password: SecretStr
+
+
 class UserIDSchema(BaseModel):
     id: int = Field(title="User")
 

@@ -20,4 +20,12 @@ class TaskService(BaseService):
         return TaskResponseSchema.model_validate(new_task)
 
 
-class TaskCommentService(BaseService): ...
+class TaskCommentService(BaseService):
+    async def get_all(self, session):
+        task_comments = await super().get_all(session)
+        if task_comments:
+            return [
+                TaskCommentResponseSchema.model_validate(task_comment)
+                for task_comment in task_comments
+            ]
+        return None

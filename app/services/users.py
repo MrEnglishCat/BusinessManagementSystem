@@ -1,8 +1,14 @@
 from .base import BaseService
-from ..schemas import UserResponseSchema
+from ..schemas import UserResponseSchema, AfterAuthUserSchema
 
 
 class UserService(BaseService):
+
+    async def get_user_after_login(self, session, **filter_by):
+        user = await super().get_one(session, **filter_by)
+        if user:
+            return AfterAuthUserSchema.model_validate(user)
+        return None
 
     async def get_all(self, session):
         users = await super().get_all(session)

@@ -25,14 +25,15 @@ class WebAuthProvider(AuthProvider):
 
         async with AsyncSession() as session:
             user_service = get_service(ServiceTypeEnum.USER)
-            username_from_db = await user_service.get_one(
+            username_from_db = await user_service.get_user_after_login(
                 session=session,
                 **{"username": username},
             )
             if not username_from_db:
                 raise LoginFailed("Username or password is invalid")
             if not verify_password(
-                hash_password=username_from_db.password, password=password
+                hash_password=username_from_db.password,
+                password=password,  # FIXME AttributeError: 'SecretStr' object has no attribute 'encode'
             ):
                 raise LoginFailed("Username or password is invalid")
         request.session.update({"username": username_from_db.username})

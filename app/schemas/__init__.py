@@ -7,4 +7,9 @@ from .tasks import (
     TaskCommentResponseSchema,
 )
 from .teams import TeamBaseSchema, TeamResponseSchema
-from .users import UserBaseSchema, UserResponseSchema, UserCreateSchema
+from .users import (
+    UserBaseSchema,
+    UserResponseSchema,
+    UserCreateSchema,
+    AfterAuthUserSchema,
+)
