@@ -15,7 +15,5 @@ class UserService(BaseService):
         return None
 
     async def add(self, session, **values):
-        user = await super().add(session, **values)
-        if user:
-            return UserResponseSchema.model_validate(user)
-        return None
+        new_user = await super().add(session, **values)
+        return UserResponseSchema.model_validate(new_user)

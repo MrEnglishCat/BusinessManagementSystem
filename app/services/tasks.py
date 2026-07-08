@@ -9,5 +9,15 @@ class TaskService(BaseService):
             return [TaskResponseSchema.model_validate(task) for task in tasks]
         return None
 
+    async def get_one(self, session, **filter_by):
+        task = await super().get_one(session, **filter_by)
+        if task:
+            return TaskResponseSchema.model_validate(task)
+        return None
+
+    async def add(self, session, **values):
+        new_task = await super().add(session, **values)
+        return TaskResponseSchema.model_validate(new_task)
+
 
 class TaskCommentService(BaseService): ...

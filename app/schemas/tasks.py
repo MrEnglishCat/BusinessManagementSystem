@@ -19,11 +19,11 @@ class TaskBaseSchema(BasePydanticModel):
     description: str = Field(title="Description")
     status: TaskStatus = Field(title="Status")
     deadline: datetime = Field(
-        title="Deadline", json_schema_extra={"example": "29.05.2026 23:23"}
+        title="Deadline", json_schema_extra={"example": "2026-05-29 23:23"}
     )
     created_by: int = Field(title="Createt by")
-    assignee_id: int = Field(title="Assignee")
-    team_id: int = Field(title="Team")
+    assignee_id: int | None = Field(default=None, title="Assignee")
+    team_id: int | None = Field(default=None, title="Team")
 
 
 class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):

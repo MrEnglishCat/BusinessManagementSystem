@@ -28,8 +28,8 @@ class TaskModel(BaseAlchemyModel):
         DateTime(timezone=True),
     )
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    assignee_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"))
+    assignee_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id"))
+    team_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("teams.id"))
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

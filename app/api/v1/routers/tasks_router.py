@@ -1,10 +1,12 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, Path, Body, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from ....config.db import get_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
+from ....dependencies.general import get_current_user
 from ....utils.enums_service import ServiceTypeEnum
 from ....services.base import BaseService
+from ....schemas import TaskBaseSchema
 
 tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -21,15 +23,37 @@ async def get_tasks(
 
 
 @tasks_router.get("/{task_id}")
-async def get_tasks_by_id(task_id: int):
-    return {"message": "Все оценки"}
+async def get_tasks_by_id(
+    task_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
+):
+    task = await task_service.get_one(session=session, **{"id": task_id})
+    if task:
+        return ResponseFactory.ok(data=task)
+    return ResponseFactory.error(message="Task not found")
 
 
 @tasks_router.post("/")
-async def post_tasks():
-    return {"message": "Все оценки"}
+async def post_tasks(
+    task: TaskBaseSchema = Body(),
+    current_user: str = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+    task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
+):
+    print(f"{current_user=}")
+
+    new_task = await task_service.add(session=session, **task.model_dump())
+    return ResponseFactory.ok(data=new_task)
 
 
 @tasks_router.delete("/{task_id}")
-async def delete_tasks_by_id(task_id: int):
-    return {"message": "Все оценки"}
+async def delete_tasks_by_id(
+    task_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
+):
+    delete_task_count = await task_service.delete(session=session, **{"id": task_id})
+    if delete_task_count:
+        return ResponseFactory.ok(data=delete_task_count)
+    return ResponseFactory.error(message="Task is not found")
