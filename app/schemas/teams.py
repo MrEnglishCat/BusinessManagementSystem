@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
-from .base import BasePydanticModel
+from .base import BasePydanticModel, BaseDataTimePydanticModel
 
 
 class TeamIDSchema(BaseModel):
@@ -14,12 +13,8 @@ class TeamBaseSchema(BasePydanticModel):
     created_by: int = Field(title="Created by")
 
 
-class TeamResponseSchema(TeamBaseSchema, TeamIDSchema):
-    created_at: datetime = Field(
-        title="Created at",
-        json_schema_extra={"example": "29.05.2026 23:23"},
-    )
-    updated_at: datetime = Field(
-        title="Updated at",
-        json_schema_extra={"example": "29.05.2026 23:23"},
-    )
+class TeamResponseSchema(
+    BaseDataTimePydanticModel,
+    TeamBaseSchema,
+    TeamIDSchema,
+): ...

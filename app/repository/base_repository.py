@@ -33,7 +33,15 @@ class BaseRepository:
         search_result = await session.execute(stmt)
         return search_result.scalar()
 
-    async def update(self, session: AsyncSession, **values): ...
+    async def update(self, session: AsyncSession, id: int, **values):
+        stmt = (
+            update(self.model)
+            .where(self.model.id == id)
+            .values(**values)
+            .returning(self.model)
+        )
+        update_result = await session.execute(stmt)
+        return update_result.scalar()
 
     async def delete(self, session: AsyncSession, **filter_by):
         stmt = delete(self.model).filter_by(**filter_by)

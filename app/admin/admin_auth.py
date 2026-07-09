@@ -9,7 +9,7 @@ from app.config.db import AsyncSession
 from app.dependencies.service import get_service
 from app.services.users import UserService
 from app.utils.enums_service import ServiceTypeEnum
-from app.schemas.users import LoginSchema
+from app.schemas.users import LoginSchema, UserResponseSchema
 from argon2 import PasswordHasher
 
 from app.utils.passwd import get_password_hash, verify_password
@@ -25,18 +25,20 @@ class WebAuthProvider(AuthProvider):
 
         async with AsyncSession() as session:
             user_service = get_service(ServiceTypeEnum.USER)
-            username_from_db = await user_service.get_one(
+            user_from_db = await user_service.get_user_after_login(
                 session=session,
                 **{"username": username},
             )
-            if not username_from_db:
+            if not user_from_db:
                 raise LoginFailed("Username or password is invalid")
             if not verify_password(
-                hash_password=username_from_db.password, password=password
+                hash_password=user_from_db.password,
+                password=password,  # FIXME AttributeError: 'SecretStr' object has no attribute 'encode'
             ):
                 raise LoginFailed("Username or password is invalid")
-        request.session.update({"username": username_from_db.username})
-        request.state.admin_user = username_from_db
+        user = UserResponseSchema.model_validate(user_from_db)
+        request.session.update({"username": user.username})
+        request.state.admin_user = user
         return response
 
     async def logout(self, request, response):
