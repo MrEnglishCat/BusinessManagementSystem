@@ -7,7 +7,7 @@ from ....services import BaseService
 from ....dependencies.service import get_service_dependency
 from sqlalchemy.ext.asyncio import AsyncSession
 
-users_router = APIRouter(prefix="/users", tags=["users"])
+users_router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @users_router.get("/", status_code=status.HTTP_200_OK, response_model=BaseResponse)

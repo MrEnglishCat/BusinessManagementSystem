@@ -29,3 +29,13 @@ class TaskCommentService(BaseService):
                 for task_comment in task_comments
             ]
         return None
+
+    async def get_one(self, session, **filter_by):
+        task_comment = await super().get_one(session, **filter_by)
+        if task_comment:
+            return TaskCommentResponseSchema.model_validate(task_comment)
+        return None
+
+    async def add(self, session, **values):
+        new_task_comment = await super().add(session, **values)
+        return TaskCommentResponseSchema.model_validate(new_task_comment)

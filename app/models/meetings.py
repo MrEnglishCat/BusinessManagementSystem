@@ -33,20 +33,15 @@ class MeetingModel(BaseAlchemyModel):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text)
-    start_time: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
-    end_time: Mapped[DateTime] = mapped_column(
+    start_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
+    end_time: Mapped[DateTime | None] = mapped_column(
         DateTime(timezone=True),
-        nullable=False,
     )
     location: Mapped[str] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    team_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("teams.id"), nullable=False
-    )
+    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"))
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

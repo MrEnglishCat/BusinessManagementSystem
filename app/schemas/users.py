@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydantic import (
     BaseModel,
     EmailStr,
@@ -9,7 +8,7 @@ from pydantic import (
 
 from app.models.users import UserRole
 from app.utils.passwd import get_password_hash
-from .base import BasePydanticModel
+from .base import BasePydanticModel, BaseDataTimePydanticModel
 
 
 class UserBaseSchema(BasePydanticModel):
@@ -51,14 +50,7 @@ class UserCreateSchema(UserBaseSchema):
 
 
 class UserResponseSchema(
+    BaseDataTimePydanticModel,
     UserBaseSchema,
     UserIDSchema,
-):
-    created_at: datetime = Field(
-        title="Created at",
-        json_schema_extra={"example": "29.05.2026 23:23"},
-    )
-    updated_at: datetime = Field(
-        title="Updated at",
-        json_schema_extra={"example": "29.05.2026 23:23"},
-    )
+): ...
