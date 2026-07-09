@@ -34,14 +34,14 @@ async def get_meetings(
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def get_meetings_by_id(
+async def get_meeting_by_id(
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    meeting = await meeting_service.get_one(session=session, **{"id": meeting_id})
+    meeting = await meeting_service.get_one(session=session, id=meeting_id)
     if meeting:
         return ResponseFactory.ok(data=meeting)
     return ResponseFactory.error(message="Meeting is not found")
@@ -64,14 +64,14 @@ async def post_meetings(
 
 
 @meeting_router.delete("/{meeting_id}")
-async def delete_meetings_by_id(
+async def delete_meeting_by_id(
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    delete_count = await meeting_service.delete(session=session, **{"id", meeting_id})
+    delete_count = await meeting_service.delete(session=session, id=meeting_id)
     if delete_count:
         return ResponseFactory.ok()
     return ResponseFactory.error(message="Meeting is not found")

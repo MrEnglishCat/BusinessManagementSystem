@@ -16,7 +16,7 @@ task_comments_router = APIRouter(prefix="/task_comments", tags=["Task comments"]
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def get_tasks(
+async def get_task_comments(
     session: AsyncSession = Depends(get_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
@@ -33,7 +33,7 @@ async def get_tasks(
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def get_tasks_by_id(
+async def get_task_comment_by_id(
     task_comment_id: int = Path(),
     session: AsyncSession = Depends(get_session),
     task_comment_service: BaseService = Depends(
@@ -41,7 +41,7 @@ async def get_tasks_by_id(
     ),
 ):
     task_comment = await task_comment_service.get_one(
-        session=session, **{"id": task_comment_id}
+        session=session, id=task_comment_id
     )
     if task_comment:
         return ResponseFactory.ok(data=task_comment)
@@ -53,7 +53,7 @@ async def get_tasks_by_id(
     status_code=status.HTTP_201_CREATED,
     response_model=BaseResponse,
 )
-async def post_tasks(
+async def post_task_comments(
     task_comment: TaskCommentBaseSchema = Body(),
     session: AsyncSession = Depends(get_session),
     task_comment_service: BaseService = Depends(
@@ -72,7 +72,7 @@ async def post_tasks(
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def delete_tasks_by_id(
+async def delete_task_comment_by_id(
     task_comment_id: int = Path(),
     session: AsyncSession = Depends(get_session),
     task_comment_service: BaseService = Depends(
@@ -80,7 +80,7 @@ async def delete_tasks_by_id(
     ),
 ):
     task_comment = await task_comment_service.delete(
-        session=session, **{"id": task_comment_id}
+        session=session, id=task_comment_id
     )
     if task_comment:
         return ResponseFactory.ok(data=task_comment)
