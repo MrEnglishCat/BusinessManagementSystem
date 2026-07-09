@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Body, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....dependencies.general import get_current_user
@@ -17,7 +17,7 @@ tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
     response_model=BaseResponse,
 )
 async def get_tasks(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):
     tasks = await task_service.get_all(session=session)
@@ -33,7 +33,7 @@ async def get_tasks(
 )
 async def get_task_by_id(
     task_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):
     task = await task_service.get_one(session=session, id=task_id)
@@ -50,7 +50,7 @@ async def get_task_by_id(
 async def post_tasks(
     task: TaskBaseSchema = Body(),
     current_user: str = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):
     new_task = await task_service.add(session=session, **task.model_dump())
@@ -64,7 +64,7 @@ async def post_tasks(
 )
 async def delete_task_by_id(
     task_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):
     delete_task_count = await task_service.delete(session=session, id=task_id)
@@ -77,7 +77,7 @@ async def delete_task_by_id(
 async def patch_team_by_id(
     task: TaskBaseSchema,
     task_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):
     update_task = await task_service.update(

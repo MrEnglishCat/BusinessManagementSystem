@@ -4,7 +4,7 @@ from .settings import settings
 
 async_engine_db = create_async_engine(settings.BMS_DB_URL, echo=True)
 
-AsyncSession = async_sessionmaker(
+async_session_maker = async_sessionmaker(
     bind=async_engine_db,
     class_=AsyncSession,
     expire_on_commit=False,  # Важно для async!
@@ -13,8 +13,8 @@ AsyncSession = async_sessionmaker(
 )
 
 
-async def get_session():
-    async with AsyncSession() as session:
+async def get_async_session():
+    async with async_session_maker() as session:
         try:
             yield session
         except Exception:

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path, Body, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from ....config.response import ResponseFactory, BaseResponse
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....utils.enums_service import ServiceTypeEnum
 from ....dependencies.service import get_service_dependency
 from ....services.base import BaseService
@@ -16,7 +16,7 @@ teams_router = APIRouter(prefix="/teams", tags=["Teams"])
     response_model=BaseResponse,
 )
 async def get_teams(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
     teams = await team_service.get_all(session=session)
@@ -30,7 +30,7 @@ async def get_teams(
 )
 async def get_team_by_id(
     team_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
     team = await team_service.get_one(session=session, id=team_id)
@@ -46,7 +46,7 @@ async def get_team_by_id(
 )
 async def post_teams(
     team: TeamBaseSchema = Body(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
     team = await team_service.add(session=session, **team.model_dump())
@@ -62,7 +62,7 @@ async def post_teams(
 )
 async def delete_team_by_id(
     team_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
     team_count = await team_service.delete(session=session, id=team_id)
@@ -75,7 +75,7 @@ async def delete_team_by_id(
 async def patch_team_by_id(
     team: TeamBaseSchema,
     team_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
     update_team = await team_service.update(

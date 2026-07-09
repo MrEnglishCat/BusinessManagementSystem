@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from ....services import BaseService
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....utils.enums_service import ServiceTypeEnum
@@ -18,7 +18,7 @@ meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
     response_model=BaseResponse,
 )
 async def get_meetings(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
@@ -36,7 +36,7 @@ async def get_meetings(
 )
 async def get_meeting_by_id(
     meeting_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
@@ -54,7 +54,7 @@ async def get_meeting_by_id(
 )
 async def post_meetings(
     meeting: MeetingBaseSchema = Body(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
@@ -66,7 +66,7 @@ async def post_meetings(
 @meeting_router.delete("/{meeting_id}")
 async def delete_meeting_by_id(
     meeting_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
@@ -81,7 +81,7 @@ async def delete_meeting_by_id(
 async def patch_team_by_id(
     meeting: MeetingBaseSchema,
     meeting_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),

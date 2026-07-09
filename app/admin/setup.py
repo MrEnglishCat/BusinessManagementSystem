@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from ..config.db import async_engine_db, get_session
+from ..config.db import async_engine_db, get_async_session
 
 from app.models.evaluation import EvaluationModel
 from app.models.meetings import MeetingModel

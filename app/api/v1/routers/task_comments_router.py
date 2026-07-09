@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ....utils.enums_service import ServiceTypeEnum
 from ....services.base import BaseService
 from ....config.response import ResponseFactory, BaseResponse
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....dependencies.service import get_service_dependency
 from ....schemas import TaskCommentBaseSchema
 
@@ -17,7 +17,7 @@ task_comments_router = APIRouter(prefix="/task_comments", tags=["Task comments"]
     response_model=BaseResponse,
 )
 async def get_task_comments(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
@@ -35,7 +35,7 @@ async def get_task_comments(
 )
 async def get_task_comment_by_id(
     task_comment_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
@@ -55,7 +55,7 @@ async def get_task_comment_by_id(
 )
 async def post_task_comments(
     task_comment: TaskCommentBaseSchema = Body(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
@@ -74,7 +74,7 @@ async def post_task_comments(
 )
 async def delete_task_comment_by_id(
     task_comment_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
@@ -91,7 +91,7 @@ async def delete_task_comment_by_id(
 async def patch_team_by_id(
     task_comment: TaskCommentBaseSchema,
     task_comment_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
