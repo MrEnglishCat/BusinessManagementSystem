@@ -36,7 +36,7 @@ async def get_team_by_id(
     team = await team_service.get_one(session=session, id=team_id)
     if team:
         return ResponseFactory.ok(data=team)
-    return ResponseFactory.error(message="Team not found")
+    return ResponseFactory.error(message="Team is not found")
 
 
 @teams_router.post(
@@ -68,4 +68,19 @@ async def delete_team_by_id(
     team_count = await team_service.delete(session=session, id=team_id)
     if team_count:
         return ResponseFactory.ok(data=team_count)
-    return ResponseFactory.error(message="Team not found")
+    return ResponseFactory.error(message="Team is not found")
+
+
+@teams_router.patch("/{team_id}")
+async def patch_team_by_id(
+    team: TeamBaseSchema,
+    team_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
+):
+    update_team = await team_service.update(
+        session=session, id=team_id, **team.model_dump()
+    )
+    if update_team:
+        return ResponseFactory.ok(data=update_team)
+    return ResponseFactory.error(message="Team is not found")

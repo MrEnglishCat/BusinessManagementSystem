@@ -75,3 +75,20 @@ async def delete_meeting_by_id(
     if delete_count:
         return ResponseFactory.ok()
     return ResponseFactory.error(message="Meeting is not found")
+
+
+@meeting_router.patch("/{meeting_id}")
+async def patch_team_by_id(
+    meeting: MeetingBaseSchema,
+    meeting_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    update_meeting = await meeting_service.update(
+        session=session, id=meeting_id, **meeting.model_dump()
+    )
+    if update_meeting:
+        return ResponseFactory.ok(data=update_meeting)
+    return ResponseFactory.error(message="Meeting is not found")

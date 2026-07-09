@@ -79,3 +79,20 @@ async def delete_evaluation_by_id(
     if delete_result:
         return ResponseFactory.ok(data=delete_result)
     return ResponseFactory.error(message="Evaluation is not found")
+
+
+@evaluation_router.patch("/{evaluation_id}")
+async def patch_team_by_id(
+    evaluation: EvaluationBaseSchema,
+    evaluation_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    evaluation_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.EVALUATION)
+    ),
+):
+    update_evaluation = await evaluation_service.update(
+        session=session, id=evaluation_id, **evaluation.model_dump()
+    )
+    if update_evaluation:
+        return ResponseFactory.ok(data=update_evaluation)
+    return ResponseFactory.error(message="Meeting is not found")

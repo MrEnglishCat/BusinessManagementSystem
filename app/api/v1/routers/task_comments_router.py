@@ -85,3 +85,20 @@ async def delete_task_comment_by_id(
     if task_comment:
         return ResponseFactory.ok(data=task_comment)
     return ResponseFactory.error("Task comment is not found")
+
+
+@task_comments_router.patch("/{task_comment_id}")
+async def patch_team_by_id(
+    task_comment: TaskCommentBaseSchema,
+    task_comment_id: int = Path(),
+    session: AsyncSession = Depends(get_session),
+    task_comment_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
+    ),
+):
+    update_task_comment = await task_comment_service.update(
+        session=session, id=task_comment_id, **task_comment.model_dump()
+    )
+    if update_task_comment:
+        return ResponseFactory.ok(data=update_task_comment)
+    return ResponseFactory.error(message="Task comment is not found")
