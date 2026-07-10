@@ -5,7 +5,7 @@ from starlette_admin.exceptions import FormValidationError
 from typing import Any
 from pydantic_core import ValidationError
 from app.models import UserModel
-from app.schemas.users import UserBaseSchema, UserCreateSchema
+from app.schemas.users.users import UserBaseSchema, UserCreateSchema
 from app.utils.errors import pydantic_errors_to_form_errors
 from app.utils.passwd import get_password_hash
 
@@ -73,4 +73,4 @@ class UserView(BaseModelView):
     async def before_create(
         self, request, data: dict[str, Any], user: UserModel
     ) -> None:
-        user.password = get_password_hash(user.password)
+        user.hashed_password = get_password_hash(user.hashed_password)

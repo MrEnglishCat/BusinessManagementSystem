@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from ....config.response import ResponseFactory, BaseResponse, ResponseError
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....schemas import EvaluationBaseSchema
 from ....dependencies.service import get_service_dependency
 from ....utils.enums_service import ServiceTypeEnum
@@ -16,7 +16,7 @@ evaluation_router = APIRouter(prefix="/evaluations", tags=["Evaluations"])
     response_model=BaseResponse,
 )
 async def get_evaluations(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
@@ -34,7 +34,7 @@ async def get_evaluations(
 )
 async def get_evaluation_by_id(
     evaluation_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
@@ -52,7 +52,7 @@ async def get_evaluation_by_id(
 )
 async def create_evaluations(
     evaluation: EvaluationBaseSchema = Body(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
@@ -70,7 +70,7 @@ async def create_evaluations(
 )
 async def delete_evaluation_by_id(
     evaluation_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
@@ -85,7 +85,7 @@ async def delete_evaluation_by_id(
 async def patch_team_by_id(
     evaluation: EvaluationBaseSchema,
     evaluation_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),

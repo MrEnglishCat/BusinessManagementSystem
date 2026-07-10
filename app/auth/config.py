@@ -1,0 +1,60 @@
+from fastapi import Depends
+from fastapi_users import BaseUserManager, FastAPIUsers, IntegerIDMixin
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
+from fastapi_users.db import SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.config.db import get_async_session
+from app.config.settings import settings
+from app.models.users import UserModel
+
+
+# ✅ Получение БД для fastapi-users
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+    yield SQLAlchemyUserDatabase(session, UserModel)
+
+
+# ✅ Менеджер пользователей
+class UserManager(IntegerIDMixin, BaseUserManager[UserModel, int]):
+    reset_password_token_secret = settings.SECRET_KEY
+    verification_token_secret = settings.SECRET_KEY
+
+
+# ✅ Получение менеджера
+async def get_user_manager(user_db=Depends(get_user_db)):
+    yield UserManager(user_db)
+
+
+# ✅ Transport (Bearer JWT)
+bearer_transport = BearerTransport(tokenUrl="/auth/jwt/login")
+
+
+# ✅ JWT стратегия
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(
+        secret=settings.SECRET_KEY,
+        lifetime_seconds=3600,  # 1 час
+    )
+
+
+# ✅ Backend
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+
+
+# ✅ FastAPIUsers instance
+fastapi_users = FastAPIUsers[UserModel, int](
+    get_user_manager,
+    [auth_backend],
+)
+
+# ✅ Dependencies для endpoint'ов
+current_active_user = fastapi_users.current_user(active=True)
+current_active_superuser = fastapi_users.current_user(active=True, superuser=True)

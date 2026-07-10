@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from fastapi import Depends
-from app.config.db import get_session
+from app.config.db import get_async_session
 from app.repository import BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 

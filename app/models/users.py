@@ -1,12 +1,22 @@
 from app.config.db import BaseAlchemyModel
 from enum import StrEnum
-from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey, Enum as DB_Enum
+from sqlalchemy import (
+    Integer,
+    String,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Enum as DB_Enum,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
+
+from fastapi_users.db import SQLAlchemyBaseUserTable
 
 
 class UserRole(StrEnum):
@@ -15,7 +25,7 @@ class UserRole(StrEnum):
     ADMIN = "admin"
 
 
-class UserModel(BaseAlchemyModel):
+class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(
@@ -35,7 +45,7 @@ class UserModel(BaseAlchemyModel):
         index=True,
         nullable=False,
     )
-    password: Mapped[str] = mapped_column(
+    hashed_password: Mapped[str] = mapped_column(
         String,
         nullable=False,
     )
@@ -44,6 +54,9 @@ class UserModel(BaseAlchemyModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     team_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("teams.id", ondelete="SET NULL")
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, server_default=text("false")
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

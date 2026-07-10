@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, status
 from ....config.response import BaseResponse, ResponseFactory
 from ....utils.enums_service import ServiceTypeEnum
 from ....schemas import UserCreateSchema, UserBaseSchema
-from ....config.db import get_session
+from ....config.db import get_async_session
 from ....services import BaseService
 from ....dependencies.service import get_service_dependency
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ users_router = APIRouter(prefix="/users", tags=["Users"])
     response_model=BaseResponse,
 )
 async def get_users(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
     users = await user_service.get_all(session=session)
@@ -30,10 +30,16 @@ async def get_users(
 )
 async def post_users(
     user: UserCreateSchema,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
-    update_result = await user_service.add(session=session, **user.model_dump())
+    update_result = await user_service.add(
+        session=session,
+        **user.model_dump(
+            by_alias=True,
+            exclude={"repeat_password"},
+        ),
+    )
     if update_result:
         return ResponseFactory.ok(data=update_result)
     return ResponseFactory.error(message="Error creating user")
@@ -46,7 +52,7 @@ async def post_users(
 )
 async def get_user_by_id(
     user_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
     user = await user_service.get_one(session=session, id=user_id)
@@ -62,7 +68,7 @@ async def get_user_by_id(
 )
 async def delete_user_by_id(
     user_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
     delete_user = await user_service.delete(session=session, id=user_id)
@@ -75,7 +81,7 @@ async def delete_user_by_id(
 async def patch_user_by_id(
     user: UserBaseSchema,
     user_id: int = Path(),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
     update_user = await user_service.update(

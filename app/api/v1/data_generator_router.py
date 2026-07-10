@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config.db import get_session
+from app.config.db import get_async_session
 from app.config.response import BaseResponse, ResponseFactory
 from app.config.data_generator.generator import (
     run_generate,
@@ -14,7 +14,7 @@ generator_router = APIRouter(tags=["Data generator"])
 
 @generator_router.post("/data_generate")
 async def generate_data(
-    session=Depends(get_session),
+    session=Depends(get_async_session),
 ):
     import time
 
@@ -29,7 +29,7 @@ async def generate_data(
     response_model=BaseResponse,
 )
 async def clear_tables(
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_async_session),
 ):
     service_list = [
         get_service(service_name=service_type) for service_type in ServiceTypeEnum

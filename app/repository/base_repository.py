@@ -1,8 +1,5 @@
-from fastapi import Depends
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.config.db import get_session
 
 
 class BaseRepository:

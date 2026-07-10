@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from ..config.db import async_engine_db, get_session
+from ..config.db import async_engine_db, get_async_session
 
 from app.models.evaluation import EvaluationModel
 from app.models.meetings import MeetingModel
@@ -16,7 +16,7 @@ from app.schemas.tasks import (
     TaskResponseSchema,
 )
 from app.schemas.teams import TeamBaseSchema, TeamResponseSchema
-from app.schemas.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
+from app.schemas.users.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
 
 from starlette_admin.contrib.sqla import Admin
 from .views import (
