@@ -34,6 +34,8 @@ class UserIDSchema(BaseModel):
 
 
 class UserCreateSchema(UserBaseSchema):
+    is_verified: bool = Field(default=True)
+    is_superuser: bool = Field(default=False)
     repeat_password: SecretStr = Field(
         exclude=True,
         title="Repeat password",

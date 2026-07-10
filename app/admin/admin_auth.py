@@ -32,7 +32,7 @@ class WebAuthProvider(AuthProvider):
             if not user_from_db:
                 raise LoginFailed("Username or password is invalid")
             if not verify_password(
-                hash_password=user_from_db.password,
+                hash_password=user_from_db.hashed_password,
                 password=password,  # FIXME AttributeError: 'SecretStr' object has no attribute 'encode'
             ):
                 raise LoginFailed("Username or password is invalid")
