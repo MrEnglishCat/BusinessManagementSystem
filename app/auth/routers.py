@@ -11,8 +11,3 @@ auth_router.include_router(
 auth_router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
 )
-
-# ❌ НЕ подключаем — у вас уже есть:
-# - get_reset_password_router()
-# - get_verify_router()
-# - get_users_router()
