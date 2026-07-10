@@ -16,7 +16,7 @@ from app.schemas.tasks import (
     TaskResponseSchema,
 )
 from app.schemas.teams import TeamBaseSchema, TeamResponseSchema
-from app.schemas.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
+from app.schemas.users.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
 
 from starlette_admin.contrib.sqla import Admin
 from .views import (

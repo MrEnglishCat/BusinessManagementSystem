@@ -5,11 +5,11 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette_admin.exceptions import LoginFailed
 
-from app.config.db import AsyncSession
+from app.config.db import async_session_maker
 from app.dependencies.service import get_service
 from app.services.users import UserService
 from app.utils.enums_service import ServiceTypeEnum
-from app.schemas.users import LoginSchema, UserResponseSchema
+from app.schemas.users.users import LoginSchema, UserResponseSchema
 from argon2 import PasswordHasher
 
 from app.utils.passwd import get_password_hash, verify_password
@@ -23,7 +23,7 @@ class WebAuthProvider(AuthProvider):
         except ValidationError:
             raise LoginFailed("Invalid username or password")
 
-        async with AsyncSession() as session:
+        async with async_session_maker() as session:
             user_service = get_service(ServiceTypeEnum.USER)
             user_from_db = await user_service.get_user_after_login(
                 session=session,
@@ -59,7 +59,7 @@ class WebAuthProvider(AuthProvider):
             return False
 
         user_service = get_service(ServiceTypeEnum.USER)
-        async with AsyncSession() as session:
+        async with async_session_maker() as session:
             user = await user_service.get_one(session, **{"username": username})
             if not user:
                 return False

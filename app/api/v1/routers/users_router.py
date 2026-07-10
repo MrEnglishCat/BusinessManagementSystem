@@ -33,7 +33,13 @@ async def post_users(
     session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
-    update_result = await user_service.add(session=session, **user.model_dump())
+    update_result = await user_service.add(
+        session=session,
+        **user.model_dump(
+            by_alias=True,
+            exclude={"repeat_password"},
+        ),
+    )
     if update_result:
         return ResponseFactory.ok(data=update_result)
     return ResponseFactory.error(message="Error creating user")

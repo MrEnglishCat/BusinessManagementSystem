@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     BMS_DB_NAME: str
     ADMIN_DB_NAME: str
 
+    SECRET_KEY: str
+    SECRET: str
+
     GENERATE_USERS_COUNT: int
     GENERATE_TEAMS_COUNT: int
     GENERATE_TASKS_COUNT: int
@@ -47,3 +50,8 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+import secrets
+
+print(secrets.token_urlsafe(64))

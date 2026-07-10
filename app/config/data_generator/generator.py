@@ -19,7 +19,7 @@ from app.models import (
     TaskStatus,
 )
 
-from app.schemas.users import UserResponseSchema
+from app.schemas.users.users import UserResponseSchema
 
 # Провайдеры Mimesis
 person = Person(locale=Locale.RU)

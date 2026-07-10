@@ -8,7 +8,7 @@ from pydantic import (
 
 from app.models.users import UserRole
 from app.utils.passwd import get_password_hash
-from .base import BasePydanticModel, BaseDataTimePydanticModel
+from ..base import BasePydanticModel, BaseDataTimePydanticModel
 
 
 class UserBaseSchema(BasePydanticModel):
@@ -40,6 +40,7 @@ class UserCreateSchema(UserBaseSchema):
     )
     password: SecretStr = Field(
         title="Password",
+        serialization_alias="hashed_password",
     )
 
     @field_validator("password", mode="after")
