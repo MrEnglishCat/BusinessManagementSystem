@@ -1,4 +1,7 @@
+from starlette_admin.exceptions import FormValidationError
+
 from .base_view import BaseModelView
+from starlette_admin import HasMany
 
 
 class TaskModelView(BaseModelView):
@@ -9,12 +12,30 @@ class TaskModelView(BaseModelView):
         "status",
         "deadline",
         "creator",
-        "assignee",
         "team",
+        "assignee",
+        "comments",
+        # HasMany(
+        #     name="comments",
+        #     label="Comment",
+        # ),
         "created_at",
         "updated_at",
     ]
-
+    exclude_fields_from_edit = [
+        "comments",
+        "created_at",
+        "updated_at",
+        "creator",
+        "team",
+    ]
+    exclude_fields_from_create = [
+        "comments",
+        "created_at",
+        "updated_at",
+        "creator",
+        "team",
+    ]
     label = "Task"
 
     searchable_fields = [
@@ -28,9 +49,7 @@ class TaskModelView(BaseModelView):
     ]
 
     async def before_create(self, request, data, task):
-        # print("request.state.user", request.user)
-        # DEVELOPMENT заполнять поле created_by через реквест и аутентификационные данные авторизованного пользователя.
-
+        task.created_by = request.state.user.id
         return await super().before_create(request, data, task)
 
 
@@ -51,3 +70,16 @@ class TaskCommentModelView(BaseModelView):
         "created_at",
         "updated_at",
     ]
+
+    exclude_fields_from_create = ["created_at", "updated_at"]
+    exclude_fields_from_edit = ["created_at", "updated_at"]
+
+    async def validate(self, request, data):
+        if not any((data.get("task"), data.get("user"))):
+            raise FormValidationError(
+                errors={
+                    "task": "The Task & User fields are required",
+                    "user": "The Task & User fields are required",
+                }
+            )
+        return await super().validate(request, data)

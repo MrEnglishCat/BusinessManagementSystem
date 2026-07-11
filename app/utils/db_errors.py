@@ -114,3 +114,42 @@ def _extract_fk_details(message: str) -> tuple[str, str]:
     ref_table = table_match.group(1) if table_match else "unknown"
 
     return field, ref_table
+
+
+def handle_integrity_error(exc: IntegrityError) -> str:
+    """Парсит IntegrityError и возвращает понятное сообщение"""
+    error_msg = str(exc.orig)
+
+    constraint_match = re.search(r'constraint "([^"]+)"', error_msg)
+    print(error_msg)
+    if not constraint_match:
+        return "Нарушение целостности данных"
+
+    constraint = constraint_match.group(1)
+
+    messages = {
+        "teams_created_by_fkey": (
+            "Cannot delete user: they are a team creator. "
+            "Delete or reassign teams first."
+        ),
+        "tasks_created_by_fkey": (
+            "Cannot delete user: they created tasks. " "Delete or reassign tasks first."
+        ),
+        "tasks_assignee_id_fkey": (
+            "Cannot delete user: tasks are assigned to them. "
+            "Delete or reassign tasks first."
+        ),
+        "evaluations_employee_id_fkey": (
+            "Cannot delete user: they participate in evaluations. "
+            "Delete related records first."
+        ),
+        "evaluations_reviewer_id_fkey": (
+            "Cannot delete user: they conducted evaluations. "
+            "Delete related records first."
+        ),
+    }
+
+    return messages.get(
+        constraint,
+        f"Cannot delete a record: it is in use in other tables (constraint: {constraint})",
+    )

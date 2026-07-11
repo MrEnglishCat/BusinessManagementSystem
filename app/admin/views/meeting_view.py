@@ -29,3 +29,17 @@ class MeetingModelView(BaseModelView):
         "created_at",
         "updated_at",
     ]
+
+    exclude_fields_from_create = [
+        "creator",
+        "created_at",
+        "updated_at",
+    ]
+    exclude_fields_from_edit = [
+        "creator",
+        "created_at",
+        "updated_at",
+    ]
+
+    async def before_create(self, request, data, meeting) -> None:
+        meeting.created_by = request.state.user.id
