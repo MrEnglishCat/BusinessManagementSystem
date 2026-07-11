@@ -38,9 +38,20 @@ class EvaluationModel(BaseAlchemyModel):
     )
     # Relationships
     employee: Mapped["UserModel"] = relationship(
-        "UserModel", foreign_keys=[employee_id], back_populates="evaluations"
+        "UserModel",
+        foreign_keys=[employee_id],
+        back_populates="evaluations",
+        lazy="selectin",
     )
-    reviewer: Mapped["UserModel"] = relationship(
-        "UserModel", foreign_keys=[reviewer_id], back_populates="given_evaluations"
+    reviewer: Mapped[list["UserModel"]] = relationship(
+        "UserModel",
+        foreign_keys=[reviewer_id],
+        back_populates="given_evaluations",
+        lazy="selectin",
     )
-    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates="evaluations")
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel",
+        foreign_keys=[task_id],
+        back_populates="evaluations",
+        lazy="selectin",
+    )

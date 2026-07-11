@@ -109,4 +109,4 @@ class TaskCommentModel(BaseAlchemyModel):
 
     def __admin_select2_repr__(self, request: Request) -> str:
 
-        return Template(f"<span>{self.content}</span>").render()
+        return Template(f"<span>{self.content}</span><hr>").render()

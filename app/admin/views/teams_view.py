@@ -14,6 +14,7 @@ class TeamView(BaseModelView):
         "invite_code",
         "creator",
         "members",
+        "meetings",
         "created_at",
         "updated_at",
     ]

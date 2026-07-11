@@ -41,12 +41,19 @@ class UserView(BaseModelView):
         "role",
         "is_active",
         "team",
+        "meetings",
         "assigned_tasks",
         "created_at",
         "updated_at",
     ]
     label = "Users"
 
+    exclude_fields_from_create = [
+        "meetings",
+        "assigned_tasks",
+        "created_at",
+        "updated_at",
+    ]
     exclude_fields_from_edit = [
         "password",
         "repeat_password",

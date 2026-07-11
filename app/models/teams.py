@@ -8,6 +8,7 @@ from jinja2 import Template
 
 if TYPE_CHECKING:
     from . import UserModel
+    from . import MeetingModel
 
 
 class TeamModel(BaseAlchemyModel):
@@ -45,6 +46,13 @@ class TeamModel(BaseAlchemyModel):
     creator: Mapped["UserModel"] = relationship(
         "UserModel",
         foreign_keys=[created_by],
+    )
+
+    meetings: Mapped[list["MeetingModel"]] = relationship(
+        "MeetingModel",
+        back_populates="team",
+        passive_deletes=True,
+        lazy="selectin",
     )
 
     def __str__(self) -> str:

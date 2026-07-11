@@ -8,9 +8,11 @@ class EvaluationIDSchema(BaseModel):
 
 
 class EvaluationBaseSchema(BasePydanticModel):
-    score: int = Field(title="Score")
+    score: int = Field(title="Score", ge=1, le=5)
     comment: str = Field(title="Comment")
-    employee_id: int = Field(title="Employee")  # UserSchema
+    employee_id: int = Field(
+        title="Employee",
+    )  # UserSchema
     reviewer_id: int = Field(title="Reviewer")  # UserSchema
     task_id: int = Field(title="Task")  # TaskSchema
 

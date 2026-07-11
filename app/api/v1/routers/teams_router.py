@@ -100,11 +100,10 @@ async def linking_to_command_by_code(
     model_invite_code = await team_service.get_one(
         session=session, invite_code=linked_data.invite_code
     )
-
     uname = await user_service.get_one(session=session, username=linked_data.username)
-    uname.team_id = model_invite_code.id
+    if uname:
+        uname.team_id = model_invite_code.id
 
     if model_invite_code:
-
         return ResponseFactory.ok(data=model_invite_code.model_dump())
     return ResponseFactory.error(message="Linked data is not found")
