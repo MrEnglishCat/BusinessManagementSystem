@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.auth.config import auth_backend, fastapi_users
 from app.auth.schemas import UserCreate, UserRead
+from ..schemas.users import LoginSchema
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 

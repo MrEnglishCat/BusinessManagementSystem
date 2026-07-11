@@ -5,7 +5,7 @@ from ....config.db import get_async_session
 from ....utils.enums_service import ServiceTypeEnum
 from ....dependencies.service import get_service_dependency
 from ....services.base import BaseService
-from ....schemas.teams import TeamBaseSchema
+from ....schemas.teams import TeamBaseSchema, TeamLinkUserSchema
 
 teams_router = APIRouter(prefix="/teams", tags=["Teams"])
 
@@ -84,3 +84,27 @@ async def patch_team_by_id(
     if update_team:
         return ResponseFactory.ok(data=update_team)
     return ResponseFactory.error(message="Team is not found")
+
+
+@teams_router.post(
+    "/{invite_team_code}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def linking_to_command_by_code(
+    linked_data: TeamLinkUserSchema,
+    session: AsyncSession = Depends(get_async_session),
+    team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    model_invite_code = await team_service.get_one(
+        session=session, invite_code=linked_data.invite_code
+    )
+
+    uname = await user_service.get_one(session=session, username=linked_data.username)
+    uname.team_id = model_invite_code.id
+
+    if model_invite_code:
+
+        return ResponseFactory.ok(data=model_invite_code.model_dump())
+    return ResponseFactory.error(message="Linked data is not found")

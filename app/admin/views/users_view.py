@@ -1,13 +1,18 @@
+from fastapi import Request
+
 from .base_view import BaseModelView
 from starlette_admin import PasswordField
 from starlette_admin.base import RequestAction
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import ActionFailed, FormValidationError
 from typing import Any
 from pydantic_core import ValidationError
-from app.models import UserModel
-from app.schemas.users.users import UserBaseSchema, UserCreateSchema
-from app.utils.errors import pydantic_errors_to_form_errors
-from app.utils.passwd import get_password_hash
+
+from ...models import UserModel, TeamModel
+from ...schemas import UserBaseSchema, UserCreateSchema
+from ...utils.errors import pydantic_errors_to_form_errors
+from ...utils.db_errors import handle_integrity_error
+from ...utils.passwd import get_password_hash
+from sqlalchemy.exc import IntegrityError
 
 
 class UserView(BaseModelView):
@@ -17,7 +22,7 @@ class UserView(BaseModelView):
         "username",
         PasswordField(
             name="password",
-            label="password",
+            label="Password",
             required=True,
             exclude_from_list=True,
             exclude_from_edit=True,
@@ -25,7 +30,8 @@ class UserView(BaseModelView):
         ),
         PasswordField(
             name="repeat_password",
-            label="repeat_password",
+            label="Repeat Password",
+            help_text="Reenter password",
             required=True,
             exclude_from_list=True,
             exclude_from_edit=True,
@@ -35,6 +41,7 @@ class UserView(BaseModelView):
         "role",
         "is_active",
         "team",
+        "assigned_tasks",
         "created_at",
         "updated_at",
     ]
@@ -73,4 +80,11 @@ class UserView(BaseModelView):
     async def before_create(
         self, request, data: dict[str, Any], user: UserModel
     ) -> None:
-        user.hashed_password = get_password_hash(user.hashed_password)
+        print("HERE before create", data)
+        user.hashed_password = get_password_hash(data.get("password"))
+
+    async def delete(self, request: Request, pks: list) -> int:
+        try:
+            return await super().delete(request, pks)
+        except IntegrityError as e:
+            raise ActionFailed(handle_integrity_error(e))

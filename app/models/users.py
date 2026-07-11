@@ -1,3 +1,6 @@
+from fastapi import Request
+from jinja2 import Template
+
 from app.config.db import BaseAlchemyModel
 from enum import StrEnum
 from sqlalchemy import (
@@ -72,7 +75,7 @@ class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
     team: Mapped["TeamModel"] = relationship(
         "TeamModel", back_populates="members", foreign_keys=team_id
     )
-    created_tasks: Mapped["TaskModel"] = relationship(
+    created_tasks: Mapped[list["TaskModel"]] = relationship(
         "TaskModel", foreign_keys="TaskModel.created_by", back_populates="creator"
     )
     assigned_tasks: Mapped["TaskModel"] = relationship(
@@ -92,5 +95,9 @@ class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
         "MeetingModel", secondary="meeting_participants", back_populates="participants"
     )
 
-    def __str__(self):
+    def __admin_repr__(self, request: Request) -> str:
         return self.username
+
+    def __admin_select2_repr__(self, request: Request) -> str:
+        team = self.team if self.team else "not set"
+        return Template(f"<span>{self.username}: {self.email} | {team}</span>").render()

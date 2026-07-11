@@ -18,6 +18,7 @@ from app.models.users import UserRole
 
 class WebAuthProvider(AuthProvider):
     async def login(self, username, password, remember_me, request, response):
+
         try:
             LoginSchema(username=username, password=password)
         except ValidationError:

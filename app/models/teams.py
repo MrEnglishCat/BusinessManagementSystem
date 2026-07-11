@@ -3,6 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Integer, String, DateTime, TIMESTAMP
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
+from fastapi import Request
+from jinja2 import Template
 
 if TYPE_CHECKING:
     from . import UserModel
@@ -33,10 +35,23 @@ class TeamModel(BaseAlchemyModel):
     )
 
     # Relationships
-    members: Mapped["UserModel"] = relationship(
-        "UserModel", back_populates="team", foreign_keys="UserModel.team_id"
+    members: Mapped[list["UserModel"]] = relationship(
+        "UserModel",
+        back_populates="team",
+        foreign_keys="[UserModel.team_id]",
+        lazy="selectin",
+        post_update=True,
     )
-    creator: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[created_by])
+    creator: Mapped["UserModel"] = relationship(
+        "UserModel",
+        foreign_keys=[created_by],
+    )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
+
+    def __admin_repr__(self, request: Request) -> str:
+        return self.name
+
+    def __admin_select2_repr__(self, request: Request) -> str:
+        return Template(f"<span>{self.name}</span>").render()

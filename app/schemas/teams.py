@@ -18,3 +18,13 @@ class TeamResponseSchema(
     TeamBaseSchema,
     TeamIDSchema,
 ): ...
+
+
+class TeamLinkUserSchema(BasePydanticModel):
+    username: str = Field(title="Username")
+    invite_code: str = Field(
+        title="Invite code",
+    )
+
+
+2
