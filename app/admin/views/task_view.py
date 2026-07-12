@@ -15,10 +15,6 @@ class TaskModelView(BaseModelView):
         "team",
         "assignee",
         "comments",
-        # HasMany(
-        #     name="comments",
-        #     label="Comment",
-        # ),
         "created_at",
         "updated_at",
     ]

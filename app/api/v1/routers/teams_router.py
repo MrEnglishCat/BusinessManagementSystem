@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Path, Body, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.services.invite import InviteService
 from ....config.response import ResponseFactory, BaseResponse
 from ....config.db import get_async_session
 from ....utils.enums_service import ServiceTypeEnum
 from ....dependencies.service import get_service_dependency
-from ....services.base import BaseService
+from ....services import BaseService, InviteService
 from ....schemas.teams import TeamBaseSchema, TeamLinkUserSchema
 
 teams_router = APIRouter(prefix="/teams", tags=["Teams"])
@@ -94,16 +96,14 @@ async def patch_team_by_id(
 async def linking_to_command_by_code(
     linked_data: TeamLinkUserSchema,
     session: AsyncSession = Depends(get_async_session),
-    team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
-    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+    invite_service: InviteService = Depends(
+        get_service_dependency(ServiceTypeEnum.INVITE)
+    ),
 ):
-    model_invite_code = await team_service.get_one(
-        session=session, invite_code=linked_data.invite_code
+    invite_result = await invite_service.invite(
+        session=session, linked_data=linked_data
     )
-    uname = await user_service.get_one(session=session, username=linked_data.username)
-    if uname:
-        uname.team_id = model_invite_code.id
 
-    if model_invite_code:
-        return ResponseFactory.ok(data=model_invite_code.model_dump())
+    if invite_result:
+        return ResponseFactory.ok(data=uname.model_dump())
     return ResponseFactory.error(message="Linked data is not found")

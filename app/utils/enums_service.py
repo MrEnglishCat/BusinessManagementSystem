@@ -8,3 +8,4 @@ class ServiceTypeEnum(StrEnum):
     MEETING = "meeting"
     TEAM = "team"
     USER = "user"
+    INVITE = "invite"
