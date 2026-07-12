@@ -8,6 +8,7 @@ from app.services import (
     TeamService,
     UserService,
     BaseService,
+    InviteService,
 )
 from app.repository import (
     EvaluationRepository,
@@ -33,6 +34,7 @@ def get_service(service_name: ServiceTypeEnum) -> BaseService:
         ),  # 1  2 - meeting_partipints
         ServiceTypeEnum.TEAM: (TeamService, TeamRepository),
         ServiceTypeEnum.USER: (UserService, UserRepository),
+        ServiceTypeEnum.INVITE: (InviteService, (UserRepository, TeamRepository)),
     }
 
     service_map_result: tuple[BaseService, BaseRepository] = service_map.get(
@@ -44,6 +46,8 @@ def get_service(service_name: ServiceTypeEnum) -> BaseService:
             detail=f"Not found service '{service_name}'",
         )
     service, repository = service_map_result
+    if isinstance(repository, tuple):
+        return service(repository)
     return service(repository())
 
 

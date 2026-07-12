@@ -49,12 +49,15 @@ class UserView(BaseModelView):
     label = "Users"
 
     exclude_fields_from_create = [
-        "meetings",
+        # "meetings",
+        "team",
         "assigned_tasks",
         "created_at",
         "updated_at",
     ]
     exclude_fields_from_edit = [
+        "meetings",
+        "team",
         "password",
         "repeat_password",
         "created_at",
@@ -87,7 +90,6 @@ class UserView(BaseModelView):
     async def before_create(
         self, request, data: dict[str, Any], user: UserModel
     ) -> None:
-        print("HERE before create", data)
         user.hashed_password = get_password_hash(data.get("password"))
 
     async def delete(self, request: Request, pks: list) -> int:

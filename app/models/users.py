@@ -81,7 +81,7 @@ class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
     assigned_tasks: Mapped["TaskModel"] = relationship(
         "TaskModel", foreign_keys="TaskModel.assignee_id", back_populates="assignee"
     )
-    evaluations: Mapped["EvaluationModel"] = relationship(
+    evaluations: Mapped[list["EvaluationModel"]] = relationship(
         "EvaluationModel",
         foreign_keys="EvaluationModel.employee_id",
         back_populates="employee",

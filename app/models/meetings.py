@@ -70,7 +70,7 @@ class MeetingModel(BaseAlchemyModel):
         passive_deletes=True,
         lazy="selectin",
     )
-    participants: Mapped["UserModel"] = relationship(
+    participants: Mapped[list["UserModel"]] = relationship(
         "UserModel",
         secondary=meeting_participants,
         back_populates="meetings",
