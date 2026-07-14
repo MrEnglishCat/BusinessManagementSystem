@@ -121,9 +121,8 @@ def handle_integrity_error(exc: IntegrityError) -> str:
     error_msg = str(exc.orig)
 
     constraint_match = re.search(r'constraint "([^"]+)"', error_msg)
-    print(error_msg)
     if not constraint_match:
-        return "Нарушение целостности данных"
+        return "Integrity data error"
 
     constraint = constraint_match.group(1)
 
