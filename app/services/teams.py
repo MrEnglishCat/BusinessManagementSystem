@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from .base import BaseService
-from ..schemas.teams import TeamResponseSchema
+from ..schemas import TeamResponseSchema, UserResponseSchema
 
 
 class TeamService(BaseService):
@@ -35,4 +36,15 @@ class TeamService(BaseService):
 
         if update_team:
             return TeamResponseSchema.model_validate(update_team)
+        return None
+
+    async def get_members(self, session: AsyncSession, **filter_by):
+        team = await self.repository.select_one(session=session, **filter_by)
+        team_members = team.members
+        if team_members:
+            return [
+                UserResponseSchema.model_validate(team_member)
+                for team_member in team_members
+            ]
+
         return None
