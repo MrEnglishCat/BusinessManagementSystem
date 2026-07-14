@@ -50,8 +50,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-
-import secrets
-
-print(secrets.token_urlsafe(64))

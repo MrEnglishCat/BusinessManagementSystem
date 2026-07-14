@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Path, status
 from ....config.response import BaseResponse, ResponseFactory
+from ....auth.config import fastapi_users
 from ....utils.enums_service import ServiceTypeEnum
 from ....schemas import UserCreateSchema, UserBaseSchema
 from ....config.db import get_async_session
