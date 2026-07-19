@@ -15,7 +15,7 @@ class EvaluationModelView(BaseModelView):
         "updated_at",
     ]
 
-    label = "Evaluation"
+    label = "Evaluations"
 
     async def validate(self, request, data):
         if not any((data.get("employee"), data.get("reviewer"), data.get("task"))):

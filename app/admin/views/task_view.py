@@ -32,7 +32,7 @@ class TaskModelView(BaseModelView):
         "creator",
         "team",
     ]
-    label = "Task"
+    label = "Tasks"
 
     searchable_fields = [
         "id",
