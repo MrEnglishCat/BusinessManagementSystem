@@ -38,13 +38,13 @@ class TeamService(BaseService):
             return TeamResponseSchema.model_validate(update_team)
         return None
 
-    async def get_members(self, session: AsyncSession, **filter_by):
-        team = await self.repository.select_one(session=session, **filter_by)
-        team_members = team.members
-        if team_members:
+    async def get_members(self, session: AsyncSession, team_id: int):
+        team = await self.repository.get_members(session=session, team_id=team_id)
+
+        if team and team.members:
             return [
                 UserResponseSchema.model_validate(team_member)
-                for team_member in team_members
+                for team_member in team.members
             ]
 
         return None

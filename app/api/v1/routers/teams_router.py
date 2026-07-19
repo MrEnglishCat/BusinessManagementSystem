@@ -109,17 +109,17 @@ async def linking_to_command_by_code(
     return ResponseFactory.error(message="Linked data is not found")
 
 
-@teams_router.post(
+@teams_router.get(
     "/{team_id}/members",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def linking_to_command_by_code(
+async def get_teams_memebers(
     team_id: int,
     session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
 ):
-    team_members = await team_service.get_members(session=session, id=team_id)
+    team_members = await team_service.get_members(session=session, team_id=team_id)
     if team_members:
         return ResponseFactory.ok(data=team_members)
     return ResponseFactory.error(message="Team is not found")
