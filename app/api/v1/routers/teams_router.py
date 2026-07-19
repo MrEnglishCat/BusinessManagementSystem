@@ -122,4 +122,4 @@ async def get_teams_memebers(
     team_members = await team_service.get_members(session=session, team_id=team_id)
     if team_members:
         return ResponseFactory.ok(data=team_members)
-    return ResponseFactory.error(message="Team is not found")
+    return ResponseFactory.error(message="Team members is not found")
