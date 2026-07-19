@@ -15,7 +15,7 @@ class MeetingModelView(BaseModelView):
         "updated_at",
     ]
 
-    label = "Meeting"
+    label = "Meetings"
 
     searchable_fields = [
         "id",
