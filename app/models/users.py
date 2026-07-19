@@ -91,8 +91,11 @@ class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
         foreign_keys="EvaluationModel.reviewer_id",
         back_populates="reviewer",
     )
-    meetings: Mapped["MeetingModel"] = relationship(
-        "MeetingModel", secondary="meeting_participants", back_populates="participants"
+    meetings: Mapped[list["MeetingModel"]] = relationship(
+        "MeetingModel",
+        secondary="meeting_participants",
+        back_populates="participants",
+        lazy="selectin",
     )
 
     def __admin_repr__(self, request: Request) -> str:

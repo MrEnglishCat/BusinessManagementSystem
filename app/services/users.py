@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseService
-from ..schemas import UserResponseSchema
+from ..schemas import UserResponseSchema, MeetingResponseSchema
 
 
 class UserService(BaseService):
@@ -40,4 +40,13 @@ class UserService(BaseService):
 
         if update_result:
             return UserResponseSchema.model_validate(update_result)
+        return None
+
+    async def get_user_meetings(self, session: AsyncSession, user_id: int):
+        user = await self.repository.get_user_meetings(session=session, user_id=user_id)
+        if user and user.meetings:
+            return [
+                MeetingResponseSchema.model_validate(user_meeting)
+                for user_meeting in user.meetings
+            ]
         return None

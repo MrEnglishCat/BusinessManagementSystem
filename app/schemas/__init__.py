@@ -12,4 +12,5 @@ from .users.users import (
     UserResponseSchema,
     UserCreateSchema,
     AfterAuthUserSchema,
+    UserIDSchema,
 )
