@@ -1,5 +1,10 @@
 from .evaluation import EvaluationBaseSchema, EvaluationResponseSchema
-from .meetings import MeetingBaseSchema, MeetingResponseSchema
+from .meetings import (
+    MeetingBaseSchema,
+    MeetingResponseSchema,
+    MeetingCancelSchema,
+    MeetingIDSchema,
+)
 from .tasks import (
     TaskBaseSchema,
     TaskResponseSchema,

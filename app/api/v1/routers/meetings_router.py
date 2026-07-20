@@ -7,7 +7,7 @@ from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import MeetingBaseSchema
+from ....schemas import MeetingBaseSchema, MeetingCancelSchema
 
 meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
@@ -23,7 +23,9 @@ async def get_meetings(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    meetings = await meeting_service.get_all(session=session)
+    meetings = await meeting_service.get_all(
+        session=session,
+    )
     if meetings:
         return ResponseFactory.ok(data=meetings)
     return ResponseFactory.error(message="Meetings is not found")
@@ -63,7 +65,11 @@ async def post_meetings(
     return new_meeting
 
 
-@meeting_router.delete("/{meeting_id}")
+@meeting_router.delete(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def delete_meeting_by_id(
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
@@ -77,7 +83,31 @@ async def delete_meeting_by_id(
     return ResponseFactory.error(message="Meeting is not found")
 
 
-@meeting_router.patch("/{meeting_id}")
+@meeting_router.patch(
+    "/cancel",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def cancel_meeting(
+    meeting_input: MeetingCancelSchema = Body(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    meeting = await meeting_service.cancel_meeting(
+        session=session, meeting=meeting_input
+    )
+    if meeting:
+        return ResponseFactory.ok(data=meeting)
+    return ResponseFactory.error(message="Meeting is not found")
+
+
+@meeting_router.patch(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     meeting: MeetingBaseSchema,
     meeting_id: int = Path(),
@@ -90,5 +120,5 @@ async def patch_team_by_id(
         session=session, id=meeting_id, **meeting.model_dump()
     )
     if update_meeting:
-        return ResponseFactory.ok(data=update_meeting)
+        return ResponseFactory.ok(message="Meeting is success canceled")
     return ResponseFactory.error(message="Meeting is not found")

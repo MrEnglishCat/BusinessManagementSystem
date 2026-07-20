@@ -18,6 +18,8 @@ from sqlalchemy import (
 from typing import TYPE_CHECKING
 from enum import StrEnum
 
+from ..utils.enums_service import MeetingStatusEmun
+
 if TYPE_CHECKING:
     from . import TeamModel, UserModel
 
@@ -35,15 +37,6 @@ meeting_participants = Table(
         ForeignKey("users.id", ondelete="CASCADE"),
     ),
 )
-
-
-class MeetingStatusEmun(StrEnum):
-    PLANNED = "planned"  # только что создана, указано время
-    CANCELED = "canceled"  # отменена
-    COMPLETED = "completed"  # завершеная встреча, или прошло время
-    IN_PROGRESS = (
-        "in_progress"  # когда текущее время между началом и окончанием встречи
-    )
 
 
 class MeetingModel(BaseAlchemyModel):
