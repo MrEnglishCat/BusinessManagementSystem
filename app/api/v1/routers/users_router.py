@@ -42,6 +42,7 @@ async def post_users(
         ),
     )
     if update_result:
+        print(update_result)
         return ResponseFactory.ok(data=update_result)
     return ResponseFactory.error(message="Error creating user")
 

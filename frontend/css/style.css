@@ -1,0 +1,106 @@
+:root { --primary: #2563eb; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+.hidden { display: none !important; }
+
+/* Навбар */
+nav { background: #0f172a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+nav a { color: #cbd5e1; text-decoration: none; margin-right: 1.5rem; }
+nav a:hover { color: white; }
+
+/* Контейнеры */
+main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.login-box { max-width: 400px; margin: 4rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+
+/* Формы и кнопки */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.25rem; font-weight: 500; font-size: 0.875rem; }
+.form-group input, .form-group select { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+button { cursor: pointer; padding: 0.5rem 1rem; border: none; border-radius: 4px; font-weight: 500; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary { background: #e2e8f0; color: var(--text); }
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-right: 0.25rem; }
+
+/* Таблицы */
+.data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.data-table th, .data-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+.data-table th { background: #f1f5f9; font-weight: 600; }
+.badge { padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.status-open { background: #dbeafe; color: #1e40af; }
+.status-in_progres { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+
+/* Модальные окна */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { background: white; padding: 1.5rem; border-radius: 8px; width: 100%; max-width: 500px; }
+.modal-body { margin: 1rem 0; }
+.error { color: var(--danger); font-weight: 500; }
+.mt-4 { margin-top: 1.5rem; }
+.filter-box { background: white; padding: 1rem; border-radius: 8px; display: flex; gap: 1rem; align-items: flex-end; }
+
+/* Карточки для дашборда */
+.card { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
+.success { color: #16a34a; font-weight: 600; }
+
+/* Статусы для бейджей */
+.status-user { background: #e0e7ff; color: #3730a3; }
+.status-manager { background: #fef3c7; color: #92400e; }
+.status-admin { background: #fee2e2; color: #991b1b; }
+.status-planned { background: #dbeafe; color: #1e40af; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+.status-canceled { background: #f1f5f9; color: #475569; text-decoration: line-through; }
+
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+/* Навбар */
+nav {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+nav a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-1px);
+}
+
+nav a.active {
+    background: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+}
+
+#logout-btn {
+    margin-left: 1rem;
+}

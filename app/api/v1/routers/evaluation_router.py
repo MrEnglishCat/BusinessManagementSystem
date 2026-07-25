@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
+from ....auth.config import current_active_user
 from ....config.response import ResponseFactory, BaseResponse, ResponseError
 from ....config.db import get_async_session
 from ....schemas import EvaluationBaseSchema
 from ....dependencies.service import get_service_dependency
-from ....utils.enums_service import ServiceTypeEnum
+from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....services import BaseService
+from ....models import UserModel
 
 evaluation_router = APIRouter(prefix="/evaluations", tags=["Evaluations"])
 
@@ -78,7 +80,14 @@ async def create_evaluations(
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
+
+    if current_user.role != UserRole.MANAGER:
+        return ResponseFactory.error(
+            message="Only users with the manager role can rate"
+        )
+
     new_evaluation = await evaluation_service.add(
         session=session, **evaluation.model_dump()
     )

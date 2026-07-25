@@ -117,7 +117,7 @@ async def linking_to_command_by_code(
     )
 
     if invite_result:
-        return ResponseFactory.ok(data=uname.model_dump())
+        return ResponseFactory.ok(data=invite_result.model_dump())
     return ResponseFactory.error(message="Linked data is not found")
 
 
