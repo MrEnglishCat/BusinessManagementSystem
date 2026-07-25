@@ -10,7 +10,7 @@ class TeamBaseSchema(BasePydanticModel):
     name: str = Field(title="Name")
     description: str = Field(title="Description")
     invite_code: str = Field(title="Invite code")
-    created_by: int = Field(title="Created by")
+    # created_by: int = Field(title="Created by")
 
 
 class TeamResponseSchema(

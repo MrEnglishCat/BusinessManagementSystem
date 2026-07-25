@@ -18,3 +18,9 @@ class MeetingStatusEmun(StrEnum):
     IN_PROGRESS = (
         "in_progress"  # когда текущее время между началом и окончанием встречи
     )
+
+
+class UserRole(StrEnum):
+    USER = "user"
+    MANAGER = "manager"
+    ADMIN = "admin"

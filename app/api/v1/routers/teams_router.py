@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.invite import InviteService
 from ....config.response import ResponseFactory, BaseResponse
 from ....config.db import get_async_session
-from ....utils.enums_service import ServiceTypeEnum
+from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....dependencies.service import get_service_dependency
 from ....services import BaseService, InviteService
-from ....schemas import TeamBaseSchema, TeamLinkUserSchema, UserBaseSchema
+from ....schemas import TeamBaseSchema, TeamLinkUserSchema
+from ....models import UserModel
 from ....auth.config import current_active_user
 
 teams_router = APIRouter(prefix="/teams", tags=["Teams"])
@@ -51,9 +52,18 @@ async def post_teams(
     team: TeamBaseSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
-    current_user: UserBaseSchema = Depends(current_active_user),
+    current_user: UserModel = Depends(current_active_user),
 ):
-    team = await team_service.add(session=session, **team.model_dump())
+
+    if current_user.role != UserRole.ADMIN:
+        return ResponseFactory.error(
+            message="Only an administrator can create commands"
+        )
+
+    team_dump = team.model_dump()
+    team_dump["created_by"] = current_user.id
+    team = await team_service.add(session=session, **team_dump)
+
     if team:
         return ResponseFactory.ok(data=team)
     return ResponseFactory.error()
