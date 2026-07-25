@@ -15,9 +15,9 @@ from app.models import (
     MeetingModel,
     EvaluationModel,
     meeting_participants,
-    UserRole,
     TaskStatus,
 )
+from app.utils.enums_service import UserRole
 
 from app.schemas.users.users import UserResponseSchema
 

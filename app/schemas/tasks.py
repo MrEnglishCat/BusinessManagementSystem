@@ -21,9 +21,8 @@ class TaskBaseSchema(BasePydanticModel):
     deadline: datetime = Field(
         title="Deadline", json_schema_extra={"example": "2026-05-29 23:23"}
     )
-    created_by: int = Field(title="Createt by")
-    assignee_id: int | None = Field(default=None, title="Assignee")
     team_id: int | None = Field(default=None, title="Team")
+    assignee_id: int | None = Field(default=None, title="Assignee")
 
 
 class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):

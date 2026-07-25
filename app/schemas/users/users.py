@@ -6,8 +6,7 @@ from pydantic import (
     SecretStr,
     field_validator,
 )
-
-from app.models.users import UserRole
+from app.utils.enums_service import UserRole
 from app.utils.passwd import get_password_hash
 from ..base import BasePydanticModel, BaseDataTimePydanticModel
 
