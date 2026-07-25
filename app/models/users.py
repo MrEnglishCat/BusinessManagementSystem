@@ -15,14 +15,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import UTC, datetime
-
+from ..utils.enums_service import UserRole
 from fastapi_users.db import SQLAlchemyBaseUserTable
-
-
-class UserRole(StrEnum):
-    USER = "user"
-    MANAGER = "manager"
-    ADMIN = "admin"
 
 
 class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
