@@ -6,7 +6,6 @@ from ....services import BaseService
 from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
-from ....auth.config import current_active_user
 from ....utils.enums_service import ServiceTypeEnum
 from ....schemas import MeetingCancelSchema, MeetingCreateSchema
 
@@ -17,8 +16,6 @@ meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
     "/",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
-    # dependencies=[Depends(current_active_user)],
-    # DEVELOPMENT  нужно навесить на все где нужно получать текущего пользователя и где нужна аутентификация.
 )
 async def get_meetings(
     session: AsyncSession = Depends(get_async_session),

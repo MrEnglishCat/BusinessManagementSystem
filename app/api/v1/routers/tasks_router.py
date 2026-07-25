@@ -79,7 +79,11 @@ async def delete_task_by_id(
     return ResponseFactory.error(message="Task is not found")
 
 
-@tasks_router.patch("/{task_id}")
+@tasks_router.patch(
+    "/{task_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     task: TaskBaseSchema,
     task_id: int = Path(),

@@ -87,7 +87,11 @@ async def delete_task_comment_by_id(
     return ResponseFactory.error("Task comment is not found")
 
 
-@task_comments_router.patch("/{task_comment_id}")
+@task_comments_router.patch(
+    "/{task_comment_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     task_comment: TaskCommentBaseSchema,
     task_comment_id: int = Path(),

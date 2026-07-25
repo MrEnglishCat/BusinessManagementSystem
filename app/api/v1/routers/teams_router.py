@@ -85,7 +85,11 @@ async def delete_team_by_id(
     return ResponseFactory.error(message="Team is not found")
 
 
-@teams_router.patch("/{team_id}")
+@teams_router.patch(
+    "/{team_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     team: TeamBaseSchema,
     team_id: int = Path(),

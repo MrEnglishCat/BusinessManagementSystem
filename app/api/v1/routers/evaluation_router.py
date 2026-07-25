@@ -112,7 +112,11 @@ async def delete_evaluation_by_id(
     return ResponseFactory.error(message="Evaluation is not found")
 
 
-@evaluation_router.patch("/{evaluation_id}")
+@evaluation_router.patch(
+    "/{evaluation_id}",
+    status_code=status.HTTP_200_OK,
+    response_class=BaseResponse,
+)
 async def patch_team_by_id(
     evaluation: EvaluationBaseSchema,
     evaluation_id: int = Path(),
