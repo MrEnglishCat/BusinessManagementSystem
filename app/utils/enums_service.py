@@ -9,7 +9,6 @@ class ServiceTypeEnum(StrEnum):
     TEAM = "team"
     USER = "user"
     INVITE = "invite"
-    CALENDAR = "calendar"
 
 
 class MeetingStatusEmun(StrEnum):

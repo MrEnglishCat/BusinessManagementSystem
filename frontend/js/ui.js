@@ -59,6 +59,11 @@ export function showModal(title, contentElement, onClose) {
         </div>
     `;
     modal.querySelector('.modal-body').appendChild(contentElement);
-    modal.querySelector('.close-modal').onclick = () => { modal.remove(); onClose?.(); };
+    modal.querySelector('.close-modal').onclick = () => { 
+        modal.remove(); 
+        onClose?.(); 
+    };
     document.body.appendChild(modal);
+    
+    return modal;
 }

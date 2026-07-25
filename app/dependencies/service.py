@@ -9,7 +9,6 @@ from app.services import (
     UserService,
     BaseService,
     InviteService,
-    CalendarService,
 )
 from app.repository import (
     EvaluationRepository,
@@ -19,7 +18,6 @@ from app.repository import (
     TeamRepository,
     UserRepository,
     BaseRepository,
-    CalendarRepository,
 )
 from fastapi import Body, HTTPException
 from app.utils.enums_service import ServiceTypeEnum
