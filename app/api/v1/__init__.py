@@ -4,3 +4,4 @@ from .routers.tasks_router import tasks_router
 from .routers.task_comments_router import task_comments_router
 from .routers.teams_router import teams_router
 from .routers.users_router import users_router
+from .routers.calendar_router import calendar_router

@@ -5,3 +5,4 @@ from .teams import TeamService
 from .users import UserService
 from .base import BaseService
 from .invite import InviteService
+from .calendar import CalendarService

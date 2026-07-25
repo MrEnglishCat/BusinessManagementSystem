@@ -4,3 +4,4 @@ from .tasks import TaskRepository, TaskCommentRepository
 from .teams import TeamRepository
 from .users import UserRepository
 from .base_repository import BaseRepository
+from .calendar import CalendarRepository
