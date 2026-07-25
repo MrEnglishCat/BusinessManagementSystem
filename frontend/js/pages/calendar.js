@@ -87,7 +87,6 @@ function groupEventsByDate(tasks, meetings) {
     tasks.forEach(t => addToDate(t.deadline, t, 'task'));
     meetings.forEach(m => addToDate(m.start_time, m, 'meeting'));
     
-    // Сортировка внутри дня: встречи сначала, потом задачи
     Object.values(grouped).forEach(arr => {
         arr.sort((a, b) => {
             if (a._type !== b._type) return a._type === 'meeting' ? -1 : 1;
@@ -108,7 +107,6 @@ function renderGrid() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     
-    // Смещение: 0=Пн, 6=Вс (JS: 0=Вс, поэтому корректируем)
     let startOffset = firstDay.getDay() - 1;
     if (startOffset < 0) startOffset = 6;
     
@@ -196,15 +194,17 @@ async function openDayDetails(dateKey) {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
     });
     
+    // 🔥 Создаем футер ОТДЕЛЬНО от body
+    const footerWrap = document.createElement('div');
+    footerWrap.className = 'footer-actions';
+    footerWrap.innerHTML = `
+        <button class="btn-primary" id="quick-task">+ Задача</button>
+        <button class="btn-secondary" id="quick-meeting">+ Встреча</button>
+    `;
+    
     if (events.length === 0) {
-        wrap.innerHTML = `
-            <p style="color: #64748b;">Нет событий на эту дату</p>
-            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <button class="btn-primary" id="quick-task">+ Задача</button>
-                <button class="btn-secondary" id="quick-meeting">+ Встреча</button>
-            </div>
-        `;
-        showModal(`📅 ${dateStr}`, wrap);
+        wrap.innerHTML = `<p style="color: #64748b; text-align: center; padding: 1rem 0;">Нет событий на эту дату</p>`;
+        showModal(`📅 ${dateStr}`, wrap, null, footerWrap);
         
         document.getElementById('quick-task').onclick = () => createQuick('task', dateKey);
         document.getElementById('quick-meeting').onclick = () => createQuick('meeting', dateKey);
@@ -251,14 +251,10 @@ async function openDayDetails(dateKey) {
                 `).join('')}
             </div>
         ` : ''}
-        
-        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-            <button class="btn-primary" id="quick-task">+ Задача</button>
-            <button class="btn-secondary" id="quick-meeting">+ Встреча</button>
-        </div>
     `;
     
-    showModal(`📅 ${dateStr}`, wrap);
+    // 🔥 Передаем footerWrap как 4-й параметр
+    showModal(`📅 ${dateStr}`, wrap, null, footerWrap);
     
     document.getElementById('quick-task').onclick = () => createQuick('task', dateKey);
     document.getElementById('quick-meeting').onclick = () => createQuick('meeting', dateKey);
@@ -268,6 +264,21 @@ async function createQuick(type, dateKey) {
     const wrap = document.createElement('div');
     const defaultTime = dateKey + 'T09:00';
     
+    // 1. Загружаем команды для встреч
+    let teamOptions = [];
+    if (type === 'meeting') {
+        try {
+            const teams = await get('/v1/teams/');
+            teamOptions = (teams || []).map(t => ({
+                value: t.id,
+                label: t.name
+            }));
+        } catch (e) {
+            console.error('Не удалось загрузить команды:', e);
+        }
+    }
+    
+    // 2. Определяем поля формы
     const fields = type === 'task' ? [
         { key: 'title', label: 'Название', required: true },
         { key: 'description', label: 'Описание' },
@@ -278,31 +289,107 @@ async function createQuick(type, dateKey) {
         { key: 'location', label: 'Место' },
         { key: 'start_time', label: 'Начало', type: 'datetime-local', value: defaultTime, required: true },
         { key: 'end_time', label: 'Конец', type: 'datetime-local', value: defaultTime, required: true },
-        { key: 'team_id', label: 'ID Команды', type: 'number', required: true }
+        { 
+            key: 'team_id', 
+            label: 'Команда', 
+            type: 'select', 
+            required: true,
+            options: teamOptions.length 
+                ? teamOptions 
+                : [{ value: '', label: '— Нет доступных команд —' }]
+        }
     ];
-    
-    const modal = showModal(type === 'task' ? 'Новая задача' : 'Новая встреча', wrap);
-    
+
+    // 3. Рендерим форму
     renderForm(wrap, {
         fields,
-        submitText: 'Создать',
+        submitText: type === 'task' ? 'Добавить задачу' : 'Добавить встречу',
         onSubmit: async (data) => {
+            console.log("🔥 1. onSubmit сработал! Сырые данные:", data);
+
+            if (type === 'meeting') {
+                // 1. Жесткая JS-валидация
+                if (!data.title || !data.start_time || !data.end_time) {
+                    alert("Заполните тему, начало и конец встречи");
+                    return;
+                }
+                if (!data.team_id || data.team_id === "") {
+                    alert("Выберите команду из выпадающего списка");
+                    return;
+                }
+
+                // 2. Подготовка данных под требования вашего OpenAPI
+                data.team_id = parseInt(data.team_id);
+                data.status = "planned"; // 🔥 ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+                
+                // Пытаемся получить ID, если функции нет - ставим заглушку 1 (замените на реальный импорт)
+                const userId = typeof getCurrentUserId === 'function' ? getCurrentUserId() : 1;
+                data.created_by = userId ? parseInt(userId) : 1; // 🔥 ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+                
+                console.log("🔥 2. Данные после подготовки для бэка:", data);
+            } else {
+                if (!data.title || !data.deadline) {
+                    alert("Заполните название и дедлайн");
+                    return;
+                }
+            }
+
+            // 3. БЕЗОПАСНАЯ блокировка кнопки (защита от null)
+            const submitBtn = wrap.querySelector('button[type="submit"]') || wrap.querySelector('button');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Сохранение...';
+            }
+
             try {
+                console.log(`🌐 Отправка запроса на создание ${type}...`);
                 if (type === 'task') {
                     await post('/v1/tasks/', data);
                 } else {
                     await post('/v1/meetings/', data);
                 }
                 
-                // ✅ ИСПРАВЛЕНИЕ: закрываем именно эту модалку
-                modal.remove();
+                console.log("✅ Успешно создано!");
                 
-                // ✅ Перезагружаем данные и перерисовываем календарь
+                // ШАГ 1: Закрываем текущую модалку с формой
+                const formModal = wrap.closest('.modal-overlay');
+                if (formModal) {
+                    formModal.remove();
+                }
+                
+                // ШАГ 2: Обновляем данные календаря в фоне (перезаписывает eventsByDate)
                 await loadAndRender();
                 
+                // ШАГ 3: Закрываем ВСЕ оставшиеся модалки (включая старую модалку дня), 
+                // чтобы избежать эффекта "матрешки" (наложения модалок друг на друга)
+                document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+                
+                // ШАГ 4: Открываем модалку дня заново. 
+                // Так как loadAndRender() уже отработал, openDayDetails возьмет свежие данные из eventsByDate
+                await openDayDetails(dateKey);
+                
             } catch (e) {
-                alert(`Ошибка создания: ${e.message}`);
+                console.error("❌ ОШИБКА ОТ СЕРВЕРА:", e);
+                alert(`Ошибка создания:\n${e.message}`);
+                
+                // Возвращаем кнопку в исходное состояние при ошибке
+                const submitBtn = wrap.querySelector('button[type="submit"]') || wrap.querySelector('button');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = type === 'task' ? 'Добавить задачу' : 'Добавить встречу';
+                }
             }
         }
     });
+
+    // 4. Добавляем предупреждение, если команд нет (вставляем ПЕРЕД формой)
+    if (type === 'meeting' && teamOptions.length === 0) {
+        const warning = document.createElement('div');
+        warning.className = 'warning-box';
+        warning.innerHTML = `⚠️ У вас нет команд. <a href="#/teams">Создайте команду</a> перед планированием.`;
+        wrap.insertBefore(warning, wrap.firstChild);
+    }
+
+    // 5. Открываем модалку
+    showModal(type === 'task' ? '➕ Новая задача' : '➕ Новая встреча', wrap);
 }

@@ -367,3 +367,88 @@ nav a.active {
     .month-title { min-width: auto; font-size: 1rem; }
     .filter-group { margin-left: 0; width: 100%; justify-content: center; }
 }
+
+
+
+/* ═══════════════════════════════════════════════════ */
+/* МОДАЛЬНЫЕ ОКНА С ПРОКРУТКОЙ                         */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem; /* Отступ от краев экрана на мобильных */
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 550px;
+    
+    /* 🔥 КЛЮЧЕвые изменения для скролла: */
+    max-height: 90vh; /* Модалка не может быть выше 90% высоты экрана */
+    display: flex;
+    flex-direction: column; /* Элементы внутри выстраиваются в колонку */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.modal h3 {
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0; /* Заголовок никогда не сжимается */
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* 🔥 Область, которая будет скроллиться */
+.modal-body {
+    padding: 1rem 1.5rem;
+    overflow-y: auto; /* Включаем вертикальный скролл при переполнении */
+    flex-grow: 1; /* Занимает всё доступное пространство между заголовком и кнопкой */
+}
+
+/* Кнопка закрытия всегда прижата к низу */
+.modal .close-modal {
+    margin: 0;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    flex-shrink: 0; /* Кнопка никогда не сжимается */
+    width: 100%;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* КРАСИВЫЙ СКРОЛЛБАР (для Chrome, Edge, Safari)       */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Для Firefox */
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}

@@ -51,7 +51,7 @@ export async function renderTasks(container) {
                 { key: 'title', label: 'Название', required: true, value: task.title },
                 { key: 'description', label: 'Описание', value: task.description },
                 { key: 'status', label: 'Статус', type: 'select', options: [
-                    { value: 'open', label: 'Open' }, { value: 'in_progres', label: 'In Progress' }, { value: 'completed', label: 'Completed' }
+                    { value: 'open', label: 'Open' }, { value: 'in_progres', label: 'In Progress' }, { value: 'completed', label: 'Completed' }, { value: 'created', label: 'Created' }
                 ], value: task.status || 'open' },
                 { key: 'deadline', label: 'Дедлайн', type: 'datetime-local', value: task.deadline ? task.deadline.slice(0, 16) : '' },
                 { key: 'assignee_id', label: 'ID Исполнителя', type: 'number', value: task.assignee_id },
