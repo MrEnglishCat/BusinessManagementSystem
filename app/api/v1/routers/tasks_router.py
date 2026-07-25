@@ -4,9 +4,10 @@ from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....auth.config import current_active_user
-from ....utils.enums_service import ServiceTypeEnum
+from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....services.base import BaseService
 from ....schemas import TaskBaseSchema
+from ....models import UserModel
 
 tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -49,11 +50,16 @@ async def get_task_by_id(
 )
 async def post_tasks(
     task: TaskBaseSchema = Body(),
-    current_user: str = Depends(current_active_user),
     session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
+    current_user: UserModel = Depends(current_active_user),
 ):
-    new_task = await task_service.add(session=session, **task.model_dump())
+    if current_user.role not in (UserRole.MANAGER, UserRole.ADMIN):
+        return ResponseFactory.error("Only a manager can create tasks")
+
+    task_dump = task.model_dump()
+    task_dump["created_by"] = current_user.id
+    new_task = await task_service.add(session=session, **task_dump)
     return ResponseFactory.ok(data=new_task)
 
 

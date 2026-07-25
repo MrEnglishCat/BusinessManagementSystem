@@ -1,6 +1,6 @@
 from fastapi_users import schemas
 from datetime import datetime
-from app.models.users import UserRole
+from ..utils.enums_service import UserRole
 
 
 class UserRead(schemas.BaseUser[int]):

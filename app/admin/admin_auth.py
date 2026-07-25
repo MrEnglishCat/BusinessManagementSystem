@@ -8,12 +8,11 @@ from starlette_admin.exceptions import LoginFailed
 from app.config.db import async_session_maker
 from app.dependencies.service import get_service
 from app.services.users import UserService
-from app.utils.enums_service import ServiceTypeEnum
+from app.utils.enums_service import ServiceTypeEnum, UserRole
 from app.schemas.users.users import LoginSchema, UserResponseSchema
 from argon2 import PasswordHasher
 
 from app.utils.passwd import get_password_hash, verify_password
-from app.models.users import UserRole
 
 
 class WebAuthProvider(AuthProvider):
