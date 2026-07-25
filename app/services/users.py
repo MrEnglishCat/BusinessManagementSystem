@@ -59,10 +59,6 @@ class UserService(BaseService):
         user = await self.repository.get_user_evaluations(
             session=session, user_id=user_id
         )
-        print("HERE")
-        print(user)
-        print(user.evaluations)
-        print("HERE")
         if user and user.evaluations:
             return [
                 EvaluationResponseSchema.model_validate(user_evaluations)
