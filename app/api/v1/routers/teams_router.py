@@ -7,7 +7,8 @@ from ....config.db import get_async_session
 from ....utils.enums_service import ServiceTypeEnum
 from ....dependencies.service import get_service_dependency
 from ....services import BaseService, InviteService
-from ....schemas.teams import TeamBaseSchema, TeamLinkUserSchema
+from ....schemas import TeamBaseSchema, TeamLinkUserSchema, UserBaseSchema
+from ....auth.config import current_active_user
 
 teams_router = APIRouter(prefix="/teams", tags=["Teams"])
 
@@ -50,6 +51,7 @@ async def post_teams(
     team: TeamBaseSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
+    current_user: UserBaseSchema = Depends(current_active_user),
 ):
     team = await team_service.add(session=session, **team.model_dump())
     if team:
