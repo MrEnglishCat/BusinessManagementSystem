@@ -22,7 +22,9 @@ class TaskService(BaseService):
         return None
 
     async def add(self, session: AsyncSession, **values):
+
         new_task = await super().add(session, **values)
+
         return TaskResponseSchema.model_validate(new_task)
 
     async def update(self, session, id, **values):

@@ -8,6 +8,8 @@ from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....utils.enums_service import ServiceTypeEnum
 from ....schemas import MeetingCancelSchema, MeetingCreateSchema
+from ....models import UserModel
+from ....auth.config import current_active_user
 
 meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
@@ -60,7 +62,12 @@ async def post_meetings(
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
+
+    meeting.created_by = current_user.id
+
+    print("TEST", current_user)
     new_meeting = await meeting_service.add(
         session=session, meeting_create_schema=meeting
     )

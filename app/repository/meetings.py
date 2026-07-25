@@ -37,6 +37,10 @@ class MeetingRepository(BaseRepository):
         return result.scalar()
 
     async def insert(self, session: AsyncSession, meeting: dict, participants: list):
+        stmt = insert(self.model).values(meeting).returning(self.model)
+        new_meeting = await session.execute(stmt)
+
+        meeting = new_meeting.scalar_one_or_none()
         if participants:
             users = await UserRepository().select_in(
                 session=session, users=participants
@@ -52,17 +56,12 @@ class MeetingRepository(BaseRepository):
                     400, "One or more participants are already busy at this time"
                 )
 
-            print(users)
-        stmt = insert(self.model).values(meeting).returning(self.model)
-        new_meeting = await session.execute(stmt)
-
-        meeting = new_meeting.scalar_one_or_none()
-        new_meeting_participants = [
-            {"meeting_id": meeting.id, "user_id": user.id} for user in users
-        ]
-        await session.execute(
-            meeting_participants.insert().values(new_meeting_participants)
-        )
+            new_meeting_participants = [
+                {"meeting_id": meeting.id, "user_id": user.id} for user in users
+            ]
+            await session.execute(
+                meeting_participants.insert().values(new_meeting_participants)
+            )
         return meeting
 
     async def check_overlap_for_users(
