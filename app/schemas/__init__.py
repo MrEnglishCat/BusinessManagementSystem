@@ -4,6 +4,7 @@ from .meetings import (
     MeetingResponseSchema,
     MeetingCancelSchema,
     MeetingIDSchema,
+    MeetingCreateSchema,
 )
 from .tasks import (
     TaskBaseSchema,
@@ -18,4 +19,10 @@ from .users.users import (
     UserCreateSchema,
     AfterAuthUserSchema,
     UserIDSchema,
+    UserMeetingSchema,
 )
+
+MeetingBaseSchema.model_rebuild()
+MeetingResponseSchema.model_rebuild()
+MeetingCreateSchema.model_rebuild()
+UserMeetingSchema.model_rebuild()

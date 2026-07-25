@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
-from ....dependencies.general import get_current_user
+from ....auth.config import current_active_user
 from ....utils.enums_service import ServiceTypeEnum
 from ....services.base import BaseService
 from ....schemas import TaskBaseSchema
@@ -49,7 +49,7 @@ async def get_task_by_id(
 )
 async def post_tasks(
     task: TaskBaseSchema = Body(),
-    current_user: str = Depends(get_current_user),
+    current_user: str = Depends(current_active_user),
     session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),
 ):

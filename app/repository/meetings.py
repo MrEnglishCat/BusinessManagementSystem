@@ -1,8 +1,11 @@
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, select
+from sqlalchemy import update, select, insert
 from datetime import datetime, UTC
+
+from app.repository.users import UserRepository
 from .base_repository import BaseRepository
-from ..models import MeetingModel
+from ..models import MeetingModel, meeting_participants
 from ..utils.enums_service import MeetingStatusEmun
 
 
@@ -32,3 +35,63 @@ class MeetingRepository(BaseRepository):
         result = await session.execute(stmt)
 
         return result.scalar()
+
+    async def insert(self, session: AsyncSession, meeting: dict, participants: list):
+        if participants:
+            users = await UserRepository().select_in(
+                session=session, users=participants
+            )
+            if await self.check_overlap_for_users(
+                session,
+                [user.id for user in users],
+                meeting.get("start_time"),
+                meeting.get("end_time"),
+            ):
+
+                raise HTTPException(
+                    400, "One or more participants are already busy at this time"
+                )
+
+            print(users)
+        stmt = insert(self.model).values(meeting).returning(self.model)
+        new_meeting = await session.execute(stmt)
+
+        meeting = new_meeting.scalar_one_or_none()
+        new_meeting_participants = [
+            {"meeting_id": meeting.id, "user_id": user.id} for user in users
+        ]
+        await session.execute(
+            meeting_participants.insert().values(new_meeting_participants)
+        )
+        return meeting
+
+    async def check_overlap_for_users(
+        self,
+        session: AsyncSession,
+        user_ids: list[int],
+        start_time: datetime,
+        end_time: datetime,
+        exclude_meeting_id: int | None = None,
+    ) -> bool:
+
+        participant_subquery = (
+            select(meeting_participants.c.meeting_id)
+            .where(meeting_participants.c.user_id.in_(user_ids))
+            .distinct()
+        )
+
+        stmt = select(MeetingModel).where(
+            MeetingModel.id.in_(participant_subquery),
+            MeetingModel.start_time <= end_time,
+            MeetingModel.end_time >= start_time,
+            MeetingModel.status != MeetingStatusEmun.CANCELED,
+        )
+
+        if exclude_meeting_id is not None:
+            stmt = stmt.where(MeetingModel.id != exclude_meeting_id)
+
+        stmt = stmt.limit(1)
+        result = await session.execute(stmt)
+        scalar_result = result.scalar_one_or_none()
+
+        return scalar_result is not None

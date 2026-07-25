@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import (
     BaseModel,
     EmailStr,
@@ -57,3 +58,7 @@ class UserResponseSchema(
     UserBaseSchema,
     UserIDSchema,
 ): ...
+
+
+class UserMeetingSchema(BasePydanticModel):
+    username: str = Field(title="Username")

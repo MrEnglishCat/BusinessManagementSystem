@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import Request
 from jinja2 import Template
 
@@ -14,10 +15,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
 
 from fastapi_users.db import SQLAlchemyBaseUserTable
 

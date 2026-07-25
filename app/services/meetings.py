@@ -3,9 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseService
 from ..schemas import (
     MeetingResponseSchema,
-    MeetingBaseSchema,
     MeetingCancelSchema,
-    MeetingIDSchema,
 )
 
 
@@ -29,8 +27,10 @@ class MeetingService(BaseService):
             return MeetingResponseSchema.model_validate(meeting)
         return None
 
-    async def add(self, session: AsyncSession, **values):
-        new_meeting = await super().add(session, **values)
+    async def add(self, session: AsyncSession, meeting_create_schema):
+        meeting = meeting_create_schema.model_dump()
+        participants = [user.get("username") for user in meeting.pop("participants")]
+        new_meeting = await self.repository.insert(session, meeting, participants)
         return MeetingResponseSchema.model_validate(new_meeting)
 
     async def update(self, session, id, **values):

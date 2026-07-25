@@ -20,6 +20,11 @@ class BaseRepository:
         insert_result = await session.execute(stmt)
         return insert_result.scalar_one_or_none()
 
+    async def select_in(self, session: AsyncSession, users: list):
+        stmt = select(self.model).where(self.model.username.in_(users))
+        users = await session.execute(stmt)
+        return users.scalars().all()
+
     async def select(self, session: AsyncSession, **filter_by):
         stmt = select(self.model).filter_by(**filter_by)
         search_result = await session.execute(stmt)
