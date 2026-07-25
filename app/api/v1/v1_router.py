@@ -7,14 +7,12 @@ from . import (
     task_comments_router,
     teams_router,
     users_router,
-    calendar_router,
 )
 
 v1_router = APIRouter(
     prefix="/v1",
 )
 
-v1_router.include_router(calendar_router)
 v1_router.include_router(evaluation_router)
 v1_router.include_router(meeting_router)
 v1_router.include_router(tasks_router)

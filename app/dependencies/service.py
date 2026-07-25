@@ -37,7 +37,6 @@ def get_service(service_name: ServiceTypeEnum) -> BaseService:
         ServiceTypeEnum.TEAM: (TeamService, TeamRepository),
         ServiceTypeEnum.USER: (UserService, UserRepository),
         ServiceTypeEnum.INVITE: (InviteService, (UserRepository, TeamRepository)),
-        ServiceTypeEnum.CALENDAR: (CalendarService, CalendarRepository),
     }
 
     service_map_result: tuple[BaseService, BaseRepository] = service_map.get(

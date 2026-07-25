@@ -6,6 +6,8 @@ import { renderTeams } from './pages/teams.js';
 import { renderTasks } from './pages/tasks.js';
 import { renderMeetings } from './pages/meetings.js';
 import { renderEvaluations } from './pages/evaluations.js';
+import { renderCalendar } from './pages/calendar.js';
+
 
 const app = document.getElementById('app');
 const navbar = document.getElementById('navbar');
@@ -20,6 +22,7 @@ const routes = {
     '/tasks': renderTasks,
     '/meetings': renderMeetings,
     '/evaluations': renderEvaluations,
+    '/calendar': renderCalendar, 
 };
 function updateActiveLink() {
     const hash = window.location.hash.slice(1) || '/';

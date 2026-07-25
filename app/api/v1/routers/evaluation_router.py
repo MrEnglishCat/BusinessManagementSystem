@@ -115,7 +115,7 @@ async def delete_evaluation_by_id(
 @evaluation_router.patch(
     "/{evaluation_id}",
     status_code=status.HTTP_200_OK,
-    response_class=BaseResponse,
+    response_model=BaseResponse,
 )
 async def patch_team_by_id(
     evaluation: EvaluationBaseSchema,

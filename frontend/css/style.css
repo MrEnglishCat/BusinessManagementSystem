@@ -104,3 +104,266 @@ nav a.active {
 #logout-btn {
     margin-left: 1rem;
 }
+
+/* ═══════════════════════════════════════════════════ */
+/* КАЛЕНДАРЬ                                           */
+/* ═══════════════════════════════════════════════════ */
+
+.calendar-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    flex-wrap: wrap;
+}
+
+.month-title {
+    margin: 0;
+    min-width: 200px;
+    text-align: center;
+    font-size: 1.25rem;
+    color: #1e293b;
+}
+
+.filter-group {
+    margin-left: auto;
+    display: flex;
+    gap: 0.25rem;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 6px;
+}
+
+.filter-btn {
+    padding: 0.4rem 0.9rem;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    color: #475569;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.filter-btn.active {
+    background: white;
+    color: #1e293b;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.filter-tasks.active { color: #2563eb; }
+.filter-meetings.active { color: #16a34a; }
+
+/* Сетка календаря */
+.calendar-grid {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #0f172a;
+    color: white;
+}
+
+.weekday {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e2e8f0;
+}
+
+.calendar-cell {
+    background: white;
+    min-height: 110px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.calendar-cell:hover {
+    background: #f8fafc;
+}
+
+.calendar-cell.other-month {
+    background: #f8fafc;
+    color: #cbd5e1;
+    cursor: default;
+}
+
+.calendar-cell.today {
+    background: #eff6ff;
+}
+
+.calendar-cell.today .cell-date {
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell-date {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+
+.cell-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Чипы событий */
+.event-chip {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.event-chip:hover {
+    transform: translateX(2px);
+}
+
+.event-task {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 3px solid #2563eb;
+}
+
+.event-meeting {
+    background: #dcfce7;
+    color: #166534;
+    border-left: 3px solid #16a34a;
+}
+
+.event-time {
+    font-weight: 700;
+    font-size: 0.65rem;
+}
+
+.event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.more-events {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 600;
+    padding: 2px 5px;
+}
+
+/* Статусы на чипах */
+.event-chip.status-canceled {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.event-chip.status-completed {
+    opacity: 0.7;
+}
+
+/* Модалка с деталями дня */
+.events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.event-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+    background: #f8fafc;
+}
+
+.event-item.meeting {
+    border-color: #16a34a;
+}
+
+.event-item.task {
+    border-color: #2563eb;
+}
+
+.event-time-block {
+    font-weight: 700;
+    color: #475569;
+    min-width: 50px;
+    font-size: 0.9rem;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.event-desc {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #64748b;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .calendar-cell { min-height: 80px; padding: 0.25rem; }
+    .cell-date { font-size: 0.75rem; }
+    .event-chip { font-size: 0.6rem; }
+    .month-title { min-width: auto; font-size: 1rem; }
+    .filter-group { margin-left: 0; width: 100%; justify-content: center; }
+}
