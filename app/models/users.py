@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastapi import Request
 from jinja2 import Template
 
@@ -14,10 +15,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from . import TaskModel, TeamModel, EvaluationModel, MeetingModel
 
 from fastapi_users.db import SQLAlchemyBaseUserTable
 
@@ -91,8 +88,11 @@ class UserModel(SQLAlchemyBaseUserTable[int], BaseAlchemyModel):
         foreign_keys="EvaluationModel.reviewer_id",
         back_populates="reviewer",
     )
-    meetings: Mapped["MeetingModel"] = relationship(
-        "MeetingModel", secondary="meeting_participants", back_populates="participants"
+    meetings: Mapped[list["MeetingModel"]] = relationship(
+        "MeetingModel",
+        secondary="meeting_participants",
+        back_populates="participants",
+        lazy="selectin",
     )
 
     def __admin_repr__(self, request: Request) -> str:

@@ -4,8 +4,21 @@ from fastapi import Request
 from jinja2 import Template
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Table, Text, DateTime, ForeignKey, Column
+from sqlalchemy import (
+    Integer,
+    String,
+    Table,
+    Text,
+    DateTime,
+    ForeignKey,
+    Column,
+    Boolean,
+    Enum,
+)
 from typing import TYPE_CHECKING
+from enum import StrEnum
+
+from ..utils.enums_service import MeetingStatusEmun
 
 if TYPE_CHECKING:
     from . import TeamModel, UserModel
@@ -47,6 +60,7 @@ class MeetingModel(BaseAlchemyModel):
     team_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("teams.id", ondelete="SET NULL")
     )
+
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
@@ -55,6 +69,18 @@ class MeetingModel(BaseAlchemyModel):
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
         onupdate=lambda: datetime.now(UTC),
+    )
+    status: Mapped[StrEnum] = mapped_column(
+        Enum(MeetingStatusEmun),
+        default=MeetingStatusEmun.PLANNED,
+        nullable=False,
+    )
+    cancellation_reason: Mapped[str | None] = mapped_column(Text)
+    canceled_at: Mapped[DateTime | None] = mapped_column(
+        DateTime(timezone=True),
+    )
+    canceled_by: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL")
     )
 
     # Relationships

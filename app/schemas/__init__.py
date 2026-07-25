@@ -1,5 +1,11 @@
 from .evaluation import EvaluationBaseSchema, EvaluationResponseSchema
-from .meetings import MeetingBaseSchema, MeetingResponseSchema
+from .meetings import (
+    MeetingBaseSchema,
+    MeetingResponseSchema,
+    MeetingCancelSchema,
+    MeetingIDSchema,
+    MeetingCreateSchema,
+)
 from .tasks import (
     TaskBaseSchema,
     TaskResponseSchema,
@@ -12,4 +18,11 @@ from .users.users import (
     UserResponseSchema,
     UserCreateSchema,
     AfterAuthUserSchema,
+    UserIDSchema,
+    UserMeetingSchema,
 )
+
+MeetingBaseSchema.model_rebuild()
+MeetingResponseSchema.model_rebuild()
+MeetingCreateSchema.model_rebuild()
+UserMeetingSchema.model_rebuild()

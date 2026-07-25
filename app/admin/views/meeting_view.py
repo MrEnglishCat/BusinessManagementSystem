@@ -1,6 +1,7 @@
 from .base_view import BaseModelView
 
 
+# DEVELOPMENT добавить возможность добавления участников митинга. По выбранной команде. Добавить возможность создавать общий митинг для любых участников.
 class MeetingModelView(BaseModelView):
     fields = [
         "id",
@@ -11,6 +12,7 @@ class MeetingModelView(BaseModelView):
         "location",
         "creator",
         "team",
+        "participants",
         "created_at",
         "updated_at",
     ]

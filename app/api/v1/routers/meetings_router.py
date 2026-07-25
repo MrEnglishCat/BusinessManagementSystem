@@ -6,8 +6,9 @@ from ....services import BaseService
 from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
+from ....auth.config import current_active_user
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import MeetingBaseSchema
+from ....schemas import MeetingCancelSchema, MeetingCreateSchema
 
 meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
@@ -16,6 +17,8 @@ meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
     "/",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
+    # dependencies=[Depends(current_active_user)],
+    # DEVELOPMENT  нужно навесить на все где нужно получать текущего пользователя и где нужна аутентификация.
 )
 async def get_meetings(
     session: AsyncSession = Depends(get_async_session),
@@ -23,7 +26,9 @@ async def get_meetings(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    meetings = await meeting_service.get_all(session=session)
+    meetings = await meeting_service.get_all(
+        session=session,
+    )
     if meetings:
         return ResponseFactory.ok(data=meetings)
     return ResponseFactory.error(message="Meetings is not found")
@@ -53,17 +58,24 @@ async def get_meeting_by_id(
     response_model=BaseResponse,
 )
 async def post_meetings(
-    meeting: MeetingBaseSchema = Body(),
+    meeting: MeetingCreateSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    new_meeting = await meeting_service.add(session=session, **meeting.model_dump())
-    return new_meeting
+    new_meeting = await meeting_service.add(
+        session=session, meeting_create_schema=meeting
+    )
+    # DEVELOPMENT created_by получать через зависимость авторизованного пользвоателя.
+    return ResponseFactory.ok(data=new_meeting)
 
 
-@meeting_router.delete("/{meeting_id}")
+@meeting_router.delete(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def delete_meeting_by_id(
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
@@ -77,9 +89,33 @@ async def delete_meeting_by_id(
     return ResponseFactory.error(message="Meeting is not found")
 
 
-@meeting_router.patch("/{meeting_id}")
+@meeting_router.patch(
+    "/cancel",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def cancel_meeting(
+    meeting_input: MeetingCancelSchema = Body(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    meeting = await meeting_service.cancel_meeting(
+        session=session, meeting=meeting_input
+    )
+    if meeting:
+        return ResponseFactory.ok(data=meeting)
+    return ResponseFactory.error(message="Meeting is not found")
+
+
+@meeting_router.patch(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
-    meeting: MeetingBaseSchema,
+    meeting: MeetingCreateSchema,
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
@@ -90,5 +126,5 @@ async def patch_team_by_id(
         session=session, id=meeting_id, **meeting.model_dump()
     )
     if update_meeting:
-        return ResponseFactory.ok(data=update_meeting)
+        return ResponseFactory.ok(message="Meeting is success canceled")
     return ResponseFactory.error(message="Meeting is not found")

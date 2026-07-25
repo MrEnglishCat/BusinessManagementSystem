@@ -8,7 +8,7 @@ class BasePydanticModel(BaseModel):
 
 class BaseDataTimePydanticModel(BasePydanticModel):
     created_at: datetime = Field(
-        title="Created at", json_schema_extra={"example": "2026-05-29"}
+        title="Created at", json_schema_extra={"example": "2026-05-29 23:23"}
     )
     updated_at: datetime = Field(
         title="Updated at", json_schema_extra={"example": "2026-05-29 23:23"}

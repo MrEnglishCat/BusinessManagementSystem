@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, status
 from ....config.response import BaseResponse, ResponseFactory
 from ....auth.config import fastapi_users
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import UserCreateSchema, UserBaseSchema
+from ....schemas import UserCreateSchema, UserBaseSchema, UserIDSchema
 from ....config.db import get_async_session
 from ....services import BaseService
 from ....dependencies.service import get_service_dependency
@@ -91,3 +91,18 @@ async def patch_user_by_id(
     if update_user:
         return ResponseFactory.ok(data=update_user)
     return ResponseFactory.error(message="User is not found")
+
+
+@users_router.get("/{user_id}/meetings")
+async def get_user_meetings(
+    user_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    user_meetings = await user_service.get_user_meetings(
+        session=session, user_id=user_id
+    )
+
+    if user_meetings:
+        return ResponseFactory.ok(data=user_meetings)
+    return ResponseFactory.error(message="User meetings is not found")
