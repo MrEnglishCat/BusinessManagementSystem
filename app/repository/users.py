@@ -17,3 +17,13 @@ class UserRepository(BaseRepository):
         user_meetings = await session.execute(stmt)
 
         return user_meetings.scalar()
+
+    async def get_user_evaluations(self, session: AsyncSession, user_id):
+        stmt = (
+            select(self.model)
+            .options(selectinload(self.model.evaluations))
+            .where(self.model.id == user_id)
+        )
+        user_meetings = await session.execute(stmt)
+
+        return user_meetings.scalar()

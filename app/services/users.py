@@ -1,7 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseService
-from ..schemas import UserResponseSchema, MeetingResponseSchema
+from ..schemas import (
+    UserResponseSchema,
+    MeetingResponseSchema,
+    EvaluationResponseSchema,
+)
 
 
 class UserService(BaseService):
@@ -48,5 +52,20 @@ class UserService(BaseService):
             return [
                 MeetingResponseSchema.model_validate(user_meeting)
                 for user_meeting in user.meetings
+            ]
+        return None
+
+    async def get_user_evaluations(self, session: AsyncSession, user_id: int):
+        user = await self.repository.get_user_evaluations(
+            session=session, user_id=user_id
+        )
+        print("HERE")
+        print(user)
+        print(user.evaluations)
+        print("HERE")
+        if user and user.evaluations:
+            return [
+                EvaluationResponseSchema.model_validate(user_evaluations)
+                for user_evaluations in user.evaluations
             ]
         return None

@@ -106,3 +106,18 @@ async def get_user_meetings(
     if user_meetings:
         return ResponseFactory.ok(data=user_meetings)
     return ResponseFactory.error(message="User meetings is not found")
+
+
+@users_router.get("/{user_id}/evaluations")
+async def get_user_evaluations(
+    user_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    user_meetings = await user_service.get_user_evaluations(
+        session=session, user_id=user_id
+    )
+
+    if user_meetings:
+        return ResponseFactory.ok(data=user_meetings)
+    return ResponseFactory.error(message="User evaluations is not found")
