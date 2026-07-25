@@ -12,6 +12,7 @@ class MeetingModelView(BaseModelView):
         "location",
         "creator",
         "team",
+        "participants",
         "created_at",
         "updated_at",
     ]
