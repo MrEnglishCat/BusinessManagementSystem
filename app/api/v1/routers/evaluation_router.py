@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from ....config.response import ResponseFactory, BaseResponse, ResponseError
 from ....config.db import get_async_session
 from ....schemas import EvaluationBaseSchema
@@ -25,6 +26,27 @@ async def get_evaluations(
     if evaluations:
         return ResponseFactory.ok(data=evaluations)
     return ResponseFactory.error(message="Evaluation is not found")
+
+
+@evaluation_router.post(
+    "/average",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_average_evaluation_by_range(
+    start_date: datetime = Body(),
+    end_date: datetime = Body(),
+    session: AsyncSession = Depends(get_async_session),
+    evaluation_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.EVALUATION)
+    ),
+):
+    average_evaluations = await evaluation_service.get_average_evaluation(
+        session=session, start_date=start_date, end_date=end_date
+    )
+    if average_evaluations:
+        return ResponseFactory.ok(data=average_evaluations)
+    return ResponseFactory.error(message="Average evaluation is not found")
 
 
 @evaluation_router.get(

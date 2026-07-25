@@ -1,4 +1,8 @@
-from .evaluation import EvaluationBaseSchema, EvaluationResponseSchema
+from .evaluation import (
+    EvaluationBaseSchema,
+    EvaluationResponseSchema,
+    AverageEvaluationResponseSchema,
+)
 from .meetings import (
     MeetingBaseSchema,
     MeetingResponseSchema,

@@ -1,6 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from .base import BaseService
-from ..schemas import EvaluationBaseSchema, EvaluationResponseSchema
+from ..schemas import (
+    EvaluationBaseSchema,
+    EvaluationResponseSchema,
+    AverageEvaluationResponseSchema,
+)
 
 
 class EvaluationService(BaseService):
@@ -30,8 +35,23 @@ class EvaluationService(BaseService):
             return EvaluationResponseSchema.model_validate(new_evaluation)
         return None
 
-    async def update(self, session, id, **values):
+    async def update(self, session: AsyncSession, id: int, **values):
         update_evaluation = await super().update(session, id, **values)
         if update_evaluation:
             return EvaluationBaseSchema.model_validate(update_evaluation)
+        return None
+
+    async def get_average_evaluation(
+        self, session: AsyncSession, start_date: datetime, end_date: datetime
+    ):
+
+        average_evaluations = await self.repository.average_evaluation(
+            session=session, start_date=start_date, end_date=end_date
+        )
+        if average_evaluations:
+            return [
+                AverageEvaluationResponseSchema.model_validate(averate_evaluation)
+                for averate_evaluation in average_evaluations
+            ]
+
         return None

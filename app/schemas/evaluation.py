@@ -22,3 +22,9 @@ class EvaluationResponseSchema(
     EvaluationBaseSchema,
     EvaluationIDSchema,
 ): ...
+
+
+class AverageEvaluationResponseSchema(BasePydanticModel):
+    id: int
+    username: str
+    avg_score: float
