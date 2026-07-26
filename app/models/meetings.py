@@ -18,7 +18,7 @@ from sqlalchemy import (
 from typing import TYPE_CHECKING
 from enum import StrEnum
 
-from ..utils.enums_service import MeetingStatusEmun
+from ..utils.enums_service import MeetingStatusEnum
 
 if TYPE_CHECKING:
     from . import TeamModel, UserModel
@@ -74,8 +74,8 @@ class MeetingModel(BaseAlchemyModel):
         onupdate=lambda: datetime.now(UTC),
     )
     status: Mapped[StrEnum] = mapped_column(
-        Enum(MeetingStatusEmun),
-        default=MeetingStatusEmun.PLANNED,
+        Enum(MeetingStatusEnum),
+        default=MeetingStatusEnum.PLANNED,
         nullable=False,
     )
     cancellation_reason: Mapped[str | None] = mapped_column(Text)

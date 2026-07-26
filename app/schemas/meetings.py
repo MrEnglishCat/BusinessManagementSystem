@@ -3,7 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 from datetime import datetime
 from .base import BasePydanticModel, BaseDataTimePydanticModel
-from ..utils.enums_service import MeetingStatusEmun
+from ..utils.enums_service import MeetingStatusEnum
 
 
 class MeetingIDSchema(BaseModel):
@@ -20,7 +20,7 @@ class MeetingCreateSchema(BasePydanticModel):
     end_time: datetime | None = Field(
         title="End time", json_schema_extra={"example": "2026-05-29 23:23"}
     )
-    status: MeetingStatusEmun = Field(title="Meeting status")
+    status: MeetingStatusEnum = Field(title="Meeting status")
     location: str | None = Field(title="Location")
     team_id: int | None = Field(title="Team")
     participants: list["UserMeetingSchema"] = Field(
@@ -45,7 +45,7 @@ class MeetingUpdateSchema(BasePydanticModel):
     end_time: datetime | None = Field(
         title="End time", json_schema_extra={"example": "2026-05-29 23:23"}
     )
-    status: MeetingStatusEmun = Field(title="Meeting status")
+    status: MeetingStatusEnum = Field(title="Meeting status")
     location: str | None = Field(title="Location")
     team_id: int | None = Field(title="Team")
 
@@ -59,7 +59,7 @@ class MeetingBaseSchema(BasePydanticModel):
     end_time: datetime | None = Field(
         title="End time", json_schema_extra={"example": "2026-05-29 23:23"}
     )
-    status: MeetingStatusEmun = Field(title="Meeting status")
+    status: MeetingStatusEnum = Field(title="Meeting status")
     cancellation_reason: str | None = Field(title="Canceletion reason")
     canceled_at: datetime | None = Field(title="Canceled at")
     canceled_by: int | None = Field(title="Canseceld_by")

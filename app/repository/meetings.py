@@ -6,19 +6,19 @@ from datetime import datetime, UTC
 from app.repository.users import UserRepository
 from .base_repository import BaseRepository
 from ..models import MeetingModel, meeting_participants, UserModel
-from ..utils.enums_service import MeetingStatusEmun
+from ..utils.enums_service import MeetingStatusEnum
 
 
 class MeetingRepository(BaseRepository):
     model = MeetingModel
 
     async def get_all(self, session: AsyncSession):
-        stmt = select(self.model).where(self.model.status != MeetingStatusEmun.CANCELED)
+        stmt = select(self.model).where(self.model.status != MeetingStatusEnum.CANCELED)
         result = await session.execute(stmt)
         return result.scalars().all()
 
     async def get_all_canceled(self, session: AsyncSession):
-        stmt = select(self.model).where(self.model.status == MeetingStatusEmun.CANCELED)
+        stmt = select(self.model).where(self.model.status == MeetingStatusEnum.CANCELED)
         result = await session.execute(stmt)
         return result.scalars().all()
 
@@ -28,7 +28,7 @@ class MeetingRepository(BaseRepository):
             .where(self.model.id == meeting.id)
             .values(
                 {
-                    "status": MeetingStatusEmun.CANCELED,
+                    "status": MeetingStatusEnum.CANCELED,
                     "cancellation_reason": meeting.cancellation_reason,
                     "canceled_at": datetime.now(UTC),
                     # "canceled_by": "current_user" # DEVELOPMENT
@@ -88,7 +88,7 @@ class MeetingRepository(BaseRepository):
             MeetingModel.id.in_(participant_subquery),
             MeetingModel.start_time <= end_time,
             MeetingModel.end_time >= start_time,
-            MeetingModel.status != MeetingStatusEmun.CANCELED,
+            MeetingModel.status != MeetingStatusEnum.CANCELED,
         )
 
         if exclude_meeting_id is not None:
