@@ -42,6 +42,7 @@ async def post_users(
         ),
     )
     if update_result:
+        print(update_result)
         return ResponseFactory.ok(data=update_result)
     return ResponseFactory.error(message="Error creating user")
 
@@ -78,7 +79,11 @@ async def delete_user_by_id(
     return ResponseFactory.error(message="User is not found")
 
 
-@users_router.patch("/{user_id}")
+@users_router.patch(
+    "/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_user_by_id(
     user: UserBaseSchema,
     user_id: int = Path(),
@@ -93,7 +98,11 @@ async def patch_user_by_id(
     return ResponseFactory.error(message="User is not found")
 
 
-@users_router.get("/{user_id}/meetings")
+@users_router.get(
+    "/{user_id}/meetings",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def get_user_meetings(
     user_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
@@ -106,3 +115,22 @@ async def get_user_meetings(
     if user_meetings:
         return ResponseFactory.ok(data=user_meetings)
     return ResponseFactory.error(message="User meetings is not found")
+
+
+@users_router.get(
+    "/{user_id}/evaluations",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_user_evaluations(
+    user_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    user_meetings = await user_service.get_user_evaluations(
+        session=session, user_id=user_id
+    )
+
+    if user_meetings:
+        return ResponseFactory.ok(data=user_meetings)
+    return ResponseFactory.error(message="User evaluations is not found")

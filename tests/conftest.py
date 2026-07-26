@@ -1,7 +1,6 @@
 import pytest
 
 
-# Для примера создадим простой класс пользователя
 class User:
     def __init__(self, name, role):
         self.name = name

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class TaskStatus(str, Enum):
+    CREATE = "create"
     OPEN = "open"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -25,7 +26,7 @@ class TaskModel(BaseAlchemyModel):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text)
     status: Mapped[TaskStatus] = mapped_column(
-        DB_Enum(TaskStatus), default=TaskStatus.OPEN
+        DB_Enum(TaskStatus), default=TaskStatus.CREATE
     )
     deadline: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

@@ -6,7 +6,9 @@ from ....services.base import BaseService
 from ....config.response import ResponseFactory, BaseResponse
 from ....config.db import get_async_session
 from ....dependencies.service import get_service_dependency
-from ....schemas import TaskCommentBaseSchema
+from ....schemas import TaskCommentBaseSchema, TaskCommentCreateSchema
+from ....models import UserModel
+from ....auth.config import current_active_user
 
 task_comments_router = APIRouter(prefix="/task_comments", tags=["Task comments"])
 
@@ -54,15 +56,21 @@ async def get_task_comment_by_id(
     response_model=BaseResponse,
 )
 async def post_task_comments(
-    task_comment: TaskCommentBaseSchema = Body(),
+    task_comment: TaskCommentCreateSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.TASK_COMMENT)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
+    if not current_user:
+        return ResponseFactory.error("User is not found")
 
+    task_comment_dump = task_comment.model_dump()
+    print(f"{current_user=}")
+    task_comment_dump["user_id"] = current_user.id
     new_task_comment = await task_comment_service.add(
-        session=session, **task_comment.model_dump()
+        session=session, **task_comment_dump
     )
     return ResponseFactory.ok(data=new_task_comment)
 
@@ -87,7 +95,11 @@ async def delete_task_comment_by_id(
     return ResponseFactory.error("Task comment is not found")
 
 
-@task_comments_router.patch("/{task_comment_id}")
+@task_comments_router.patch(
+    "/{task_comment_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     task_comment: TaskCommentBaseSchema,
     task_comment_id: int = Path(),

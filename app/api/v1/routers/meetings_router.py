@@ -6,9 +6,15 @@ from ....services import BaseService
 from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
-from ....auth.config import current_active_user
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import MeetingCancelSchema, MeetingCreateSchema
+from ....schemas import (
+    MeetingCancelSchema,
+    MeetingCreateSchema,
+    MeetingUpdateSchema,
+    MeetingParticipantUpdateSchema,
+)
+from ....models import UserModel
+from ....auth.config import current_active_user
 
 meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
 
@@ -17,8 +23,6 @@ meeting_router = APIRouter(prefix="/meetings", tags=["Meeting"])
     "/",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
-    # dependencies=[Depends(current_active_user)],
-    # DEVELOPMENT  нужно навесить на все где нужно получать текущего пользователя и где нужна аутентификация.
 )
 async def get_meetings(
     session: AsyncSession = Depends(get_async_session),
@@ -27,6 +31,25 @@ async def get_meetings(
     ),
 ):
     meetings = await meeting_service.get_all(
+        session=session,
+    )
+    if meetings:
+        return ResponseFactory.ok(data=meetings)
+    return ResponseFactory.error(message="Meetings is not found")
+
+
+@meeting_router.get(
+    "/canceled",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_all_canceled(
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    meetings = await meeting_service.get_all_canceled(
         session=session,
     )
     if meetings:
@@ -63,12 +86,13 @@ async def post_meetings(
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
+
     new_meeting = await meeting_service.add(
-        session=session, meeting_create_schema=meeting
+        session=session, meeting_create_schema=meeting, current_user=current_user
     )
-    # DEVELOPMENT created_by получать через зависимость авторизованного пользвоателя.
-    return ResponseFactory.ok(data=new_meeting)
+    return ResponseFactory.ok(message=f"Meeting {new_meeting.title} is created")
 
 
 @meeting_router.delete(
@@ -109,19 +133,66 @@ async def cancel_meeting(
     return ResponseFactory.error(message="Meeting is not found")
 
 
-@meeting_router.patch(
-    "/{meeting_id}",
+@meeting_router.post(
+    "/{meeting_id}/add_participants",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def patch_team_by_id(
-    meeting: MeetingCreateSchema,
+async def add_team_partipitians(
+    participants_schema: MeetingParticipantUpdateSchema = Body(),
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
+    update_meeting = await meeting_service.add_participants(
+        session=session,
+        meeting_id=meeting_id,
+        participants_schema=participants_schema,
+    )
+    if update_meeting:
+        return ResponseFactory.ok(message="Participants is success add")
+    return ResponseFactory.error(message="Participants is not found")
+
+
+@meeting_router.delete(
+    "/{meeting_id}/participants",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def delete_team_partipitians(
+    participants_schema: MeetingParticipantUpdateSchema = Body(),
+    meeting_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    result = await meeting_service.delete_participants(
+        session=session,
+        meeting_id=meeting_id,
+        participants_schema=participants_schema,
+    )
+    if result:
+        return ResponseFactory.ok(message="Participants is delete")
+    return ResponseFactory.error(message="Participants is not found")
+
+
+@meeting_router.patch(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def patch_team_by_id(
+    meeting: MeetingUpdateSchema,
+    meeting_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+
     update_meeting = await meeting_service.update(
         session=session, id=meeting_id, **meeting.model_dump()
     )

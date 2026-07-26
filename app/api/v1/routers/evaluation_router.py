@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
+from ....auth.config import current_active_user
 from ....config.response import ResponseFactory, BaseResponse, ResponseError
 from ....config.db import get_async_session
 from ....schemas import EvaluationBaseSchema
 from ....dependencies.service import get_service_dependency
-from ....utils.enums_service import ServiceTypeEnum
+from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....services import BaseService
+from ....models import UserModel
 
 evaluation_router = APIRouter(prefix="/evaluations", tags=["Evaluations"])
 
@@ -25,6 +28,27 @@ async def get_evaluations(
     if evaluations:
         return ResponseFactory.ok(data=evaluations)
     return ResponseFactory.error(message="Evaluation is not found")
+
+
+@evaluation_router.post(
+    "/average",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_average_evaluation_by_range(
+    start_date: datetime = Body(),
+    end_date: datetime = Body(),
+    session: AsyncSession = Depends(get_async_session),
+    evaluation_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.EVALUATION)
+    ),
+):
+    average_evaluations = await evaluation_service.get_average_evaluation(
+        session=session, start_date=start_date, end_date=end_date
+    )
+    if average_evaluations:
+        return ResponseFactory.ok(data=average_evaluations)
+    return ResponseFactory.error(message="Average evaluation is not found")
 
 
 @evaluation_router.get(
@@ -56,7 +80,14 @@ async def create_evaluations(
     evaluation_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.EVALUATION)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
+
+    if current_user.role != UserRole.MANAGER:
+        return ResponseFactory.error(
+            message="Only users with the manager role can rate"
+        )
+
     new_evaluation = await evaluation_service.add(
         session=session, **evaluation.model_dump()
     )
@@ -81,7 +112,11 @@ async def delete_evaluation_by_id(
     return ResponseFactory.error(message="Evaluation is not found")
 
 
-@evaluation_router.patch("/{evaluation_id}")
+@evaluation_router.patch(
+    "/{evaluation_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     evaluation: EvaluationBaseSchema,
     evaluation_id: int = Path(),

@@ -9,6 +9,7 @@ from pydantic import (
 from app.utils.enums_service import UserRole
 from app.utils.passwd import get_password_hash
 from ..base import BasePydanticModel, BaseDataTimePydanticModel
+from ...schemas import TeamResponseSchema
 
 
 class UserBaseSchema(BasePydanticModel):
@@ -57,6 +58,14 @@ class UserResponseSchema(
     UserBaseSchema,
     UserIDSchema,
 ): ...
+
+
+class UserResponseAllUsersSchema(
+    BaseDataTimePydanticModel,
+    UserBaseSchema,
+    UserIDSchema,
+):
+    team: TeamResponseSchema | None = Field(title="Team")
 
 
 class UserMeetingSchema(BasePydanticModel):

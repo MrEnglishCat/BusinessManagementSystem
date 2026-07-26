@@ -23,6 +23,7 @@ class TeamService(BaseService):
         return None
 
     async def add(self, session: AsyncSession, **values):
+
         new_team = await super().add(session, **values)
         return TeamResponseSchema.model_validate(new_team)
 

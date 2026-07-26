@@ -59,7 +59,8 @@ async def post_teams(
         return ResponseFactory.error(
             message="Only an administrator can create commands"
         )
-
+    if not team.invite_code.startswith("INV-"):
+        team.invite_code = f"INV-{team.invite_code}"
     team_dump = team.model_dump()
     team_dump["created_by"] = current_user.id
     team = await team_service.add(session=session, **team_dump)
@@ -85,7 +86,11 @@ async def delete_team_by_id(
     return ResponseFactory.error(message="Team is not found")
 
 
-@teams_router.patch("/{team_id}")
+@teams_router.patch(
+    "/{team_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
 async def patch_team_by_id(
     team: TeamBaseSchema,
     team_id: int = Path(),
@@ -101,7 +106,7 @@ async def patch_team_by_id(
 
 
 @teams_router.post(
-    "/{invite_team_code}",
+    "/invite_user",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
@@ -112,12 +117,14 @@ async def linking_to_command_by_code(
         get_service_dependency(ServiceTypeEnum.INVITE)
     ),
 ):
-    invite_result = await invite_service.invite(
-        session=session, linked_data=linked_data
+    invite_result = (
+        await invite_service.invite(  # !!!!!!!!!! доделать привязку к команде
+            session=session, linked_data=linked_data
+        )
     )
 
     if invite_result:
-        return ResponseFactory.ok(data=uname.model_dump())
+        return ResponseFactory.ok(data=invite_result)
     return ResponseFactory.error(message="Linked data is not found")
 
 

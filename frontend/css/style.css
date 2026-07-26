@@ -1,0 +1,1004 @@
+:root { --primary: #2563eb; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+.hidden { display: none !important; }
+
+/* Навбар */
+nav { background: #0f172a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+nav a { color: #cbd5e1; text-decoration: none; margin-right: 1.5rem; }
+nav a:hover { color: white; }
+
+/* Контейнеры */
+main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.login-box { max-width: 400px; margin: 4rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+
+/* Формы и кнопки */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.25rem; font-weight: 500; font-size: 0.875rem; }
+.form-group input, .form-group select { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+button { cursor: pointer; padding: 0.5rem 1rem; border: none; border-radius: 4px; font-weight: 500; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary { background: #e2e8f0; color: var(--text); }
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-right: 0.25rem; }
+
+/* Таблицы */
+.data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+.data-table th, .data-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+.data-table th { background: #f1f5f9; font-weight: 600; }
+.badge { padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.status-open { background: #dbeafe; color: #1e40af; }
+.status-in_progres { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+
+/* Модальные окна */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { background: white; padding: 1.5rem; border-radius: 8px; width: 100%; max-width: 500px; }
+.modal-body { margin: 1rem 0; }
+.error { color: var(--danger); font-weight: 500; }
+.mt-4 { margin-top: 1.5rem; }
+.filter-box { background: white; padding: 1rem; border-radius: 8px; display: flex; gap: 1rem; align-items: flex-end; }
+
+/* Карточки для дашборда */
+.card { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
+.success { color: #16a34a; font-weight: 600; }
+
+/* Статусы для бейджей */
+.status-user { background: #e0e7ff; color: #3730a3; }
+.status-manager { background: #fef3c7; color: #92400e; }
+.status-admin { background: #fee2e2; color: #991b1b; }
+.status-planned { background: #dbeafe; color: #1e40af; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+.status-canceled { background: #f1f5f9; color: #475569; text-decoration: line-through; }
+
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+/* Навбар */
+nav {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+nav a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-1px);
+}
+
+nav a.active {
+    background: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+}
+
+#logout-btn {
+    margin-left: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* КАЛЕНДАРЬ                                           */
+/* ═══════════════════════════════════════════════════ */
+
+.calendar-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    flex-wrap: wrap;
+}
+
+.month-title {
+    margin: 0;
+    min-width: 200px;
+    text-align: center;
+    font-size: 1.25rem;
+    color: #1e293b;
+}
+
+.filter-group {
+    margin-left: auto;
+    display: flex;
+    gap: 0.25rem;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 6px;
+}
+
+.filter-btn {
+    padding: 0.4rem 0.9rem;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    color: #475569;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.filter-btn.active {
+    background: white;
+    color: #1e293b;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.filter-tasks.active { color: #2563eb; }
+.filter-meetings.active { color: #16a34a; }
+
+/* Сетка календаря */
+.calendar-grid {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #0f172a;
+    color: white;
+}
+
+.weekday {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e2e8f0;
+}
+
+.calendar-cell {
+    background: white;
+    min-height: 110px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.calendar-cell:hover {
+    background: #f8fafc;
+}
+
+.calendar-cell.other-month {
+    background: #f8fafc;
+    color: #cbd5e1;
+    cursor: default;
+}
+
+.calendar-cell.today {
+    background: #eff6ff;
+}
+
+.calendar-cell.today .cell-date {
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell-date {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+
+.cell-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Чипы событий */
+.event-chip {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.event-chip:hover {
+    transform: translateX(2px);
+}
+
+.event-task {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 3px solid #2563eb;
+}
+
+.event-meeting {
+    background: #dcfce7;
+    color: #166534;
+    border-left: 3px solid #16a34a;
+}
+
+.event-time {
+    font-weight: 700;
+    font-size: 0.65rem;
+}
+
+.event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.more-events {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 600;
+    padding: 2px 5px;
+}
+
+/* Статусы на чипах */
+.event-chip.status-canceled {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.event-chip.status-completed {
+    opacity: 0.7;
+}
+
+/* Модалка с деталями дня */
+.events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.event-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+    background: #f8fafc;
+}
+
+.event-item.meeting {
+    border-color: #16a34a;
+}
+
+.event-item.task {
+    border-color: #2563eb;
+}
+
+.event-time-block {
+    font-weight: 700;
+    color: #475569;
+    min-width: 50px;
+    font-size: 0.9rem;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.event-desc {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #64748b;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .calendar-cell { min-height: 80px; padding: 0.25rem; }
+    .cell-date { font-size: 0.75rem; }
+    .event-chip { font-size: 0.6rem; }
+    .month-title { min-width: auto; font-size: 1rem; }
+    .filter-group { margin-left: 0; width: 100%; justify-content: center; }
+}
+
+
+
+/* ═══════════════════════════════════════════════════ */
+/* МОДАЛЬНЫЕ ОКНА С ПРОКРУТКОЙ                         */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem; /* Отступ от краев экрана на мобильных */
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 550px;
+    
+    /* 🔥 КЛЮЧЕвые изменения для скролла: */
+    max-height: 90vh; /* Модалка не может быть выше 90% высоты экрана */
+    display: flex;
+    flex-direction: column; /* Элементы внутри выстраиваются в колонку */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.modal h3 {
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0; /* Заголовок никогда не сжимается */
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* 🔥 Область, которая будет скроллиться */
+.modal-body {
+    padding: 1rem 1.5rem;
+    overflow-y: auto; /* Включаем вертикальный скролл при переполнении */
+    flex-grow: 1; /* Занимает всё доступное пространство между заголовком и кнопкой */
+}
+
+/* Кнопка закрытия всегда прижата к низу */
+.modal .close-modal {
+    margin: 0;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    flex-shrink: 0; /* Кнопка никогда не сжимается */
+    width: 100%;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* КРАСИВЫЙ СКРОЛЛБАР (для Chrome, Edge, Safari)       */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Для Firefox */
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ТАБЛИЦА УЧАСТНИКОВ КОМАНДЫ                          */
+/* ═══════════════════════════════════════════════════ */
+
+.members-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.members-table th,
+.members-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.members-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.members-table tbody tr:hover {
+    background: #f8fafc;
+    transition: background 0.15s ease;
+}
+
+.members-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+    .members-table th:nth-child(2),
+    .members-table td:nth-child(2) {
+        display: none; /* Скрываем Email на очень маленьких экранах */
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* СТАТУСЫ ЗАДАЧ И ПОЛЬЗОВАТЕЛЕЙ                       */
+/* ═══════════════════════════════════════════════════ */
+
+.status-open { background: #dbeafe; color: #1e40af; }
+.status-in_progres { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+
+/* 🔥 НОВЫЙ СТИЛЬ ДЛЯ СТАТУСА CREATED */
+.status-created { 
+    background: #f3f4f6; 
+    color: #374151; 
+    border: 1px solid #d1d5db; 
+}
+
+.status-user { background: #e0e7ff; color: #3730a3; }
+.status-manager { background: #fef3c7; color: #92400e; }
+.status-admin { background: #fee2e2; color: #991b1b; }
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ПРОСМОТР ЗАДАЧИ И КОММЕНТАРИИ С ПРОКРУТКОЙ          */
+/* ═══════════════════════════════════════════════════ */
+
+.task-view-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Занимает всю доступную высоту modal-body */
+}
+
+.task-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-shrink: 0; /* Не сжимается */
+}
+
+.task-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    flex-shrink: 0; /* Не сжимается */
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+    color: #0f172a;
+    word-break: break-word;
+}
+
+/* 🔥 ОБЛАСТЬ СКРОЛЛА ДЛЯ КОММЕНТАРИЕВ */
+.comments-scroll-area {
+    flex-grow: 1; /* Занимает всё свободное пространство */
+    overflow-y: auto; /* Включает скролл при переполнении */
+    max-height: 40vh; /* Ограничение высоты, чтобы модалка не была гигантской */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 0.5rem;
+    margin: 1rem 0;
+}
+
+.no-comments {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem 0;
+    margin: 0;
+}
+
+.comment-card {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #3b82f6;
+    animation: slideInComment 0.3s ease-out; /* Анимация появления нового */
+}
+
+@keyframes slideInComment {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-header strong {
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.comment-date {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.comment-body {
+    font-size: 0.9rem;
+    color: #334155;
+    line-height: 1.5;
+    white-space: pre-wrap; /* Сохраняет переносы строк */
+}
+
+/* 🔥 ФОРМА ВВОДА КОММЕНТАРИЯ (всегда прижата к низу) */
+.comment-input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    flex-shrink: 0; /* Не сжимается, всегда видна */
+}
+
+.comment-input-area textarea {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.comment-input-area textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .task-details-grid {
+        grid-template-columns: 1fr;
+    }
+    .task-view-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+/* ═══════════════════════════════════════════════════ */
+/* ВКЛАДКИ (ТАБЫ) ДЛЯ ВСТРЕЧ                           */
+/* ═══════════════════════════════════════════════════ */
+
+.tabs-container {
+    display: flex;
+    gap: 0.25rem;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 8px;
+    width: fit-content;
+    margin-bottom: 1rem;
+}
+
+.tab-btn {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.tab-btn.active {
+    background: white;
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+/* Стиль для пустых состояний */
+.no-team {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.team-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ТАБЫ ВНУТРИ МОДАЛКИ КАЛЕНДАРЯ                       */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-tabs-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.modal-tab-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.6rem; /* Чтобы перекрыть нижнюю границу контейнера */
+}
+
+.modal-tab-btn:hover {
+    color: #334155;
+    background: #f8fafc;
+}
+
+.modal-tab-btn.active {
+    color: #2563eb;
+    font-weight: 600;
+    border-bottom: 2px solid #2563eb;
+    background: transparent;
+}
+
+/* Скрытие/показ контента табов */
+.modal-tab-content {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Кнопка на всю ширину для добавления */
+.btn-block {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* Пустое состояние внутри таба */
+.empty-state {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem 0;
+    margin: 0;
+}
+
+/* Улучшаем список событий внутри модалки */
+.modal-body .events-list {
+    max-height: 35vh; /* Ограничиваем высоту списка внутри модалки */
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* УПРАВЛЕНИЕ УЧАСТНИКАМИ ВСТРЕЧИ                      */
+/* ═══════════════════════════════════════════════════ */
+
+.participants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 25vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #3b82f6;
+    font-size: 0.9rem;
+}
+
+.empty-state-small {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.add-participant-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.form-select {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.add-participant-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ КНОПОК                         */
+/* ═══════════════════════════════════════════════════ */
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+    background: #d97706;
+}
+
+/* Компактное расположение кнопок в ячейке действий */
+.data-table td.actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* СПИСОК ДОСТУПНЫХ ПОЛЬЗОВАТЕЛЕЙ С ЧЕКБОКСАМИ         */
+/* ═══════════════════════════════════════════════════ */
+
+.available-users-list {
+    max-height: 25vh;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-size: 0.9rem;
+    user-select: none; /* Запрещаем выделение текста при быстрых кликах */
+}
+
+.checkbox-item:hover {
+    background: #e2e8f0;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #2563eb; /* Синий цвет галочки */
+}
+
+.checkbox-item span {
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Кнопка на всю ширину */
+.btn-block {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* ПОИСК ПОЛЬЗОВАТЕЛЕЙ                                 */
+/* ═══════════════════════════════════════════════════ */
+
+.search-container {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    padding-right: 4rem; /* Место для счетчика */
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.search-count {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+/* Подсветка совпадений */
+mark {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* КОЛОНКИ ИНФОРМАЦИИ ОБ ОТМЕНЕ ВСТРЕЧ                 */
+/* ═══════════════════════════════════════════════════ */
+
+/* Tooltip для длинной причины отмены */
+.cancel-reason-tooltip {
+    color: #dc2626;
+    border-bottom: 1px dotted #dc2626;
+    cursor: help;
+    display: inline-block;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+/* Блок с информацией об отмене (дата + пользователь) */
+.canceled-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.8rem;
+}
+
+.canceled-date {
+    color: #475569;
+    font-weight: 500;
+}
+
+.canceled-user {
+    color: #64748b;
+    font-style: italic;
+}

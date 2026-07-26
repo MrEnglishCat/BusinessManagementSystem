@@ -1,16 +1,28 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from .base import BaseService
 from ..schemas import (
     MeetingResponseSchema,
     MeetingCancelSchema,
+    MeetingCreateSchema,
+    MeetingParticipantUpdateSchema,
 )
+from ..repository import UserRepository
 
 
 class MeetingService(BaseService):
 
     async def get_all(self, session: AsyncSession):
         meetings = await self.repository.get_all(session)
+        if meetings:
+            return [
+                MeetingResponseSchema.model_validate(meeting) for meeting in meetings
+            ]
+        return None
+
+    async def get_all_canceled(self, session: AsyncSession):
+        meetings = await self.repository.get_all_canceled(session)
         if meetings:
             return [
                 MeetingResponseSchema.model_validate(meeting) for meeting in meetings
@@ -27,11 +39,14 @@ class MeetingService(BaseService):
             return MeetingResponseSchema.model_validate(meeting)
         return None
 
-    async def add(self, session: AsyncSession, meeting_create_schema):
+    async def add(self, session: AsyncSession, meeting_create_schema, current_user):
         meeting = meeting_create_schema.model_dump()
+        meeting["created_by"] = current_user.id
         participants = [user.get("username") for user in meeting.pop("participants")]
         new_meeting = await self.repository.insert(session, meeting, participants)
-        return MeetingResponseSchema.model_validate(new_meeting)
+        if new_meeting:
+            return MeetingResponseSchema.model_validate(new_meeting)
+        return None
 
     async def update(self, session, id, **values):
         update_meeting = await super().update(session, id, **values)
@@ -45,4 +60,40 @@ class MeetingService(BaseService):
         )
         if canceled_meeting_id:
             return canceled_meeting_id
+        return None
+
+    async def add_participants(
+        self,
+        session: AsyncSession,
+        meeting_id: int,
+        participants_schema: MeetingParticipantUpdateSchema,
+    ):
+        participants_username = [
+            participant.username for participant in participants_schema.participants
+        ]
+        db_result = await self.repository.add_paricipants(
+            session=session,
+            meeting_id=meeting_id,
+            participants_username=participants_username,
+        )
+        if db_result:
+            return db_result
+        return None
+
+    async def delete_participants(
+        self,
+        session: AsyncSession,
+        meeting_id: int,
+        participants_schema: MeetingParticipantUpdateSchema,
+    ):
+        participants_username = [
+            participant.username for participant in participants_schema.participants
+        ]
+        db_result = await self.repository.delete_paricipants(
+            session=session,
+            meeting_id=meeting_id,
+            participants_username=participants_username,
+        )
+        if db_result:
+            return db_result
         return None

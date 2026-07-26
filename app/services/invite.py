@@ -1,5 +1,5 @@
 from ..config.response import ResponseFactory
-from ..schemas.teams import TeamLinkUserSchema
+from ..schemas import TeamLinkUserSchema, UserResponseSchema
 from ..repository import BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,13 +14,14 @@ class InviteService:
         model_invite_code = await self.team_repository.select_one(
             session=session, invite_code=linked_data.invite_code
         )
+        if not model_invite_code:
+            return None
         user = await self.user_repositoty.select_one(
             session=session, username=linked_data.username
         )
 
         if user:
             if user.team_id:
-                return ResponseFactory.error(
-                    message="The user is already linked by code"
-                )
+                return None
             user.team_id = model_invite_code.id
+            return UserResponseSchema.model_validate(user)
