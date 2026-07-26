@@ -12,3 +12,12 @@ python -r install requirements.txt
 cd ./frontend
 
 python -m http.server 8080
+
+
+
+
+
+
+http://localhost:8000/admin - страница админки
+
+http://localhost:8080/#/login  - страница авторизации фронтенда
