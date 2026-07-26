@@ -63,7 +63,7 @@ class TaskCommentService(BaseService):
 
     async def add(self, session: AsyncSession, **values):
         new_task_comment = await super().add(session, **values)
-        return TaskCommentResponseSchema.model_validate(new_task_comment)
+        return new_task_comment
 
     async def update(self, session, id, **values):
         update_task_comment = await super().update(session, id, **values)
