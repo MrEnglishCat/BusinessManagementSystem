@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, select, insert
+from sqlalchemy import update, select, insert, delete
 from datetime import datetime, UTC
 
 from app.repository.users import UserRepository
@@ -117,3 +117,18 @@ class MeetingRepository(BaseRepository):
         )
         execute_result = await session.execute(stmt)
         return execute_result.all()
+
+    async def delete_paricipants(
+        self, session: AsyncSession, meeting_id: int, participants_username: list
+    ):
+
+        select_stmt = select(UserModel.id).where(
+            UserModel.username.in_(participants_username)
+        )
+
+        delete_stmt = delete(meeting_participants).where(
+            meeting_participants.c.meeting_id == meeting_id,
+            meeting_participants.c.user_id.in_(select_stmt),
+        )
+        execute_result = await session.execute(delete_stmt)
+        return execute_result.rowcount

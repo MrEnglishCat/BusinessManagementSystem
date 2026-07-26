@@ -159,7 +159,7 @@ async def add_team_partipitians(
 
 
 @meeting_router.delete(
-    "/{meeting_id}/add_participants",
+    "/{meeting_id}/participants",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
@@ -171,8 +171,13 @@ async def delete_team_partipitians(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
-    print(f"{participants_schema=}")
-
+    result = await meeting_service.delete_participants(
+        session=session,
+        meeting_id=meeting_id,
+        participants_schema=participants_schema,
+    )
+    if result:
+        return ResponseFactory.ok(message="Participants is delete")
     return ResponseFactory.error(message="Participants is not found")
 
 

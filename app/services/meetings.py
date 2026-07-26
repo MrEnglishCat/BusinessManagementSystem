@@ -79,3 +79,21 @@ class MeetingService(BaseService):
         if db_result:
             return db_result
         return None
+
+    async def delete_participants(
+        self,
+        session: AsyncSession,
+        meeting_id: int,
+        participants_schema: MeetingParticipantUpdateSchema,
+    ):
+        participants_username = [
+            participant.username for participant in participants_schema.participants
+        ]
+        db_result = await self.repository.delete_paricipants(
+            session=session,
+            meeting_id=meeting_id,
+            participants_username=participants_username,
+        )
+        if db_result:
+            return db_result
+        return None

@@ -33,7 +33,15 @@ async function apiRequest(path, options = {}) {
 export const get = (path) => apiRequest(path, { method: 'GET' });
 export const post = (path, body) => apiRequest(path, { method: 'POST', body: JSON.stringify(body) });
 export const patch = (path, body) => apiRequest(path, { method: 'PATCH', body: JSON.stringify(body) });
-export const del = (path) => apiRequest(path, { method: 'DELETE' });
+
+// 🔥 ОБНОВЛЕННЫЙ del: теперь принимает необязательный body
+export const del = (path, body = null) => {
+    const options = { method: 'DELETE' };
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+    return apiRequest(path, options);
+};
 
 // Спец. метод для login (требует form-urlencoded, а не JSON)
 export async function login(username, password) {

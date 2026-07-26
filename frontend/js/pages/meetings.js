@@ -112,10 +112,11 @@ export async function renderMeetings(container) {
                 btn.onclick = () => openCancelForm(btn.dataset.id);
             });
             
-            // Обработчики для кнопок "Участники" (они уже были, оставляем)
+             // 🔥 Обработчики для кнопок "Участники"
             list.querySelectorAll('.manage-participants-btn').forEach(btn => {
-                btn.onclick = () => manageParticipants(btn.dataset.id);
+                btn.onclick = () => manageParticipants(btn.dataset.id, loadMeetings); 
             });
+            
             
             // Обработчики для кнопок "Отменить"
             list.querySelectorAll('.cancel-btn').forEach(btn => {
@@ -208,9 +209,9 @@ export async function renderMeetings(container) {
 }
 
 // =====================================================================
-// 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ: УПРАВЛЕНИЕ УЧАСТНИКАМИ (С ОБНОВЛЕНИЕМ МОДАЛКИ)
+// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ (С БЛОКИРОВКОЙ ЕДИНИЧНОГО УДАЛЕНИЯ ПРИ МАССОВОМ)
 // =====================================================================
-async function manageParticipants(meetingId) {
+async function manageParticipants(meetingId, reloadCallback) {
     const wrap = document.createElement('div');
     wrap.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem 0;">Загрузка данных...</p>';
     const modalInstance = showModal('Управление участниками', wrap);
@@ -227,10 +228,10 @@ async function manageParticipants(meetingId) {
         // 🔥 1. Функция ДОБАВЛЕНИЯ нескольких участников
         const addParticipants = async () => {
             const addBtn = document.getElementById('add-selected-btn');
-            const checkboxes = wrap.querySelectorAll('.user-checkbox:checked');
+            const checkboxes = wrap.querySelectorAll('.add-checkbox:checked');
             
             if (checkboxes.length === 0) {
-                alert('Выберите хотя бы одного пользователя');
+                alert('Выберите хотя бы одного пользователя для добавления');
                 return;
             }
 
@@ -245,16 +246,10 @@ async function manageParticipants(meetingId) {
                 });
                 
                 showNotification(`Успешно добавлено участников: ${usersToAdd.length}`, 'success');
-                
-                // 🔥 ОБНОВЛЯЕМ локальное состояние
                 currentParticipants = [...currentParticipants, ...usersToAdd];
                 searchQuery = '';
-                
-                // 🔥 ПЕРЕРИСОВЫВАЕМ модалку с новыми данными
                 renderContent();
-                
-                // Обновляем счетчик в главной таблице
-                await loadMeetings();
+                if (typeof reloadCallback === 'function') await reloadCallback();
                 
             } catch (e) {
                 alert(`Ошибка добавления: ${e.message}`);
@@ -267,32 +262,75 @@ async function manageParticipants(meetingId) {
             }
         };
 
-        // 🔥 2. Функция УДАЛЕНИЯ участника
-        const removeParticipant = async (username) => {
-            // 🔥 СРАЗУ обновляем локальное состояние
-            currentParticipants = currentParticipants.filter(p => p.username !== username);
+        // 🔥 2. Функция МАССОВОГО УДАЛЕНИЯ участников
+        const removeParticipants = async () => {
+            const removeBtn = document.getElementById('remove-selected-btn');
+            const checkboxes = wrap.querySelectorAll('.remove-checkbox:checked');
             
-            await saveParticipants();
-        };
+            if (checkboxes.length === 0) {
+                alert('Выберите хотя бы одного участника для удаления');
+                return;
+            }
 
-        // 🔥 3. Функция сохранения (для удаления)
-        const saveParticipants = async () => {
+            const usersToRemove = Array.from(checkboxes).map(cb => cb.value);
+            const confirmed = confirm(`Вы уверены, что хотите удалить ${usersToRemove.length} участник(ов) из этой встречи?`);
+            if (!confirmed) return;
+
+            removeBtn.disabled = true;
+            removeBtn.textContent = 'Удаление...';
+
             try {
-                await patch(`/v1/meetings/${meetingId}`, {
-                    participants: currentParticipants
+                await del(`/v1/meetings/${meetingId}/participants`, {
+                    participants: usersToRemove.map(username => ({ username }))
                 });
-                showNotification('Участник успешно удален', 'success');
-                
-                // 🔥 ПЕРЕРИСОВЫВАЕМ модалку с обновленными данными
+
+                showNotification(`Успешно удалено участников: ${usersToRemove.length}`, 'success');
+                currentParticipants = currentParticipants.filter(p => !usersToRemove.includes(p.username));
                 renderContent();
+                if (typeof reloadCallback === 'function') await reloadCallback();
                 
-                await loadMeetings();
             } catch (e) {
-                alert(`Ошибка сохранения: ${e.message}`);
+                alert(`Ошибка удаления: ${e.message}`);
+            } finally {
+                const newRemoveBtn = document.getElementById('remove-selected-btn');
+                if (newRemoveBtn) {
+                    newRemoveBtn.disabled = false;
+                    newRemoveBtn.textContent = 'Удалить выбранных';
+                }
             }
         };
 
-        // 🔥 4. Функция фильтрации пользователей
+        // 🔥 3. Функция единичного УДАЛЕНИЯ
+        const removeSingleParticipant = async (username) => {
+            const confirmed = confirm(`Вы уверены, что хотите удалить пользователя "${username}" из этой встречи?`);
+            if (!confirmed) return;
+
+            const removeBtn = wrap.querySelector(`.remove-single-btn[data-username="${CSS.escape(username)}"]`);
+            if (removeBtn) {
+                removeBtn.disabled = true;
+                removeBtn.textContent = '...';
+            }
+
+            try {
+                await del(`/v1/meetings/${meetingId}/participants`, {
+                    participants: [{ username }]
+                });
+
+                currentParticipants = currentParticipants.filter(p => p.username !== username);
+                showNotification(`Пользователь "${username}" удалён`, 'success');
+                renderContent();
+                if (typeof reloadCallback === 'function') await reloadCallback();
+
+            } catch (e) {
+                alert(`Ошибка удаления: ${e.message}`);
+                if (removeBtn) {
+                    removeBtn.disabled = false;
+                    removeBtn.textContent = 'Удалить';
+                }
+            }
+        };
+
+        // 🔥 4. Функция фильтрации
         const filterUsers = (users, query) => {
             if (!query.trim()) return users;
             const lowerQuery = query.toLowerCase();
@@ -302,18 +340,16 @@ async function manageParticipants(meetingId) {
             );
         };
 
-        // 🔥 5. Функция подсветки совпадений
+        // 🔥 5. Функция подсветки
         const highlightText = (text, query) => {
             if (!query.trim()) return escapeHtml(text);
             const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
             return escapeHtml(text).replace(regex, '<mark>$1</mark>');
         };
 
-        const escapeRegExp = (string) => {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        };
+        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // 🔥 6. Функция отрисовки содержимого модалки
+        // 🔥 6. Функция отрисовки
         const renderContent = () => {
             const existingUsernames = new Set(currentParticipants.map(p => p.username));
             const allAvailableUsers = (allUsers || []).filter(u => !existingUsernames.has(u.username));
@@ -321,17 +357,29 @@ async function manageParticipants(meetingId) {
 
             let html = `
                 <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Текущие участники (${currentParticipants.length})</h4>
-                <div class="participants-list">
-                    ${currentParticipants.length === 0 
-                        ? '<p class="empty-state-small">Пока никого нет</p>' 
-                        : currentParticipants.map(p => `
-                            <div class="participant-item">
-                                <span>👤 ${escapeHtml(p.username)}</span>
-                                <button class="btn-sm btn-danger remove-participant-btn" data-username="${escapeHtml(p.username)}">Удалить</button>
-                            </div>
-                          `).join('')
-                    }
-                </div>
+            `;
+
+            if (currentParticipants.length === 0) {
+                html += `<p class="empty-state-small">Пока никого нет</p>`;
+            } else {
+                html += `<div class="participants-list">`;
+                currentParticipants.forEach(p => {
+                    html += `
+                        <label class="checkbox-item remove-item">
+                            <input type="checkbox" class="remove-checkbox" value="${escapeHtml(p.username)}">
+                            <span>👤 ${escapeHtml(p.username)}</span>
+                            <button class="btn-sm btn-danger remove-single-btn" data-username="${escapeHtml(p.username)}">Удалить</button>
+                        </label>
+                    `;
+                });
+                html += `</div>
+                    <button id="remove-selected-btn" class="btn-danger btn-block" style="margin-top: 0.75rem;">
+                        Удалить выбранных
+                    </button>
+                `;
+            }
+
+            html += `
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
                 <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Добавить участников</h4>
             `;
@@ -359,7 +407,7 @@ async function manageParticipants(meetingId) {
                     filteredUsers.forEach(u => {
                         html += `
                             <label class="checkbox-item">
-                                <input type="checkbox" class="user-checkbox" value="${escapeHtml(u.username)}">
+                                <input type="checkbox" class="add-checkbox" value="${escapeHtml(u.username)}">
                                 <span>
                                     ${highlightText(u.username, searchQuery)} 
                                     <small style="color: #64748b;">(${highlightText(u.full_name || 'Без имени', searchQuery)})</small>
@@ -377,7 +425,34 @@ async function manageParticipants(meetingId) {
 
             wrap.innerHTML = html;
 
-            // 🔥 Обработчик поиска
+            // 🔥 7. ЛОГИКА БЛОКИРОВКИ ЕДИНИЧНЫХ КНОПОК
+            const updateSingleDeleteButtons = () => {
+                const checkedCount = wrap.querySelectorAll('.remove-checkbox:checked').length;
+                const isMultipleSelected = checkedCount > 0;
+
+                wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
+                    btn.disabled = isMultipleSelected;
+                    if (isMultipleSelected) {
+                        btn.title = "Сначала снимите выделение или используйте кнопку 'Удалить выбранных'";
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                    } else {
+                        btn.title = "Удалить этого участника";
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    }
+                });
+            };
+
+            // Навешиваем обработчик изменения чекбоксов
+            wrap.querySelectorAll('.remove-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSingleDeleteButtons);
+            });
+
+            // Вызываем сразу после отрисовки, чтобы установить начальное состояние
+            updateSingleDeleteButtons();
+
+            // 🔥 8. Остальные обработчики
             const searchInput = document.getElementById('user-search');
             if (searchInput) {
                 let debounceTimer;
@@ -395,19 +470,21 @@ async function manageParticipants(meetingId) {
                 });
             }
 
-            // 🔥 Обработчики кнопок удаления
-            wrap.querySelectorAll('.remove-participant-btn').forEach(btn => {
-                btn.onclick = async () => await removeParticipant(btn.dataset.username);
-            });
-
-            // 🔥 Обработчик кнопки добавления
             const addBtn = document.getElementById('add-selected-btn');
-            if (addBtn) {
-                addBtn.onclick = addParticipants;
-            }
+            if (addBtn) addBtn.onclick = addParticipants;
+
+            const removeBtn = document.getElementById('remove-selected-btn');
+            if (removeBtn) removeBtn.onclick = removeParticipants;
+
+            // Обработчики единичного удаления
+            wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.preventDefault(); // Предотвращаем срабатывание чекбокса при клике на кнопку
+                    await removeSingleParticipant(btn.dataset.username);
+                };
+            });
         };
 
-        // Первичная отрисовка
         renderContent();
 
     } catch (e) {
