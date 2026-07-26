@@ -1,16 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseService
-from ..schemas import (
-    MeetingResponseSchema,
-    MeetingCancelSchema,
-)
+from ..schemas import MeetingResponseSchema, MeetingCancelSchema, MeetingCreateSchema
 
 
 class MeetingService(BaseService):
 
     async def get_all(self, session: AsyncSession):
         meetings = await self.repository.get_all(session)
+        if meetings:
+            return [
+                MeetingResponseSchema.model_validate(meeting) for meeting in meetings
+            ]
+        return None
+
+    async def get_all_canceled(self, session: AsyncSession):
+        meetings = await self.repository.get_all_canceled(session)
         if meetings:
             return [
                 MeetingResponseSchema.model_validate(meeting) for meeting in meetings
@@ -27,11 +32,14 @@ class MeetingService(BaseService):
             return MeetingResponseSchema.model_validate(meeting)
         return None
 
-    async def add(self, session: AsyncSession, meeting_create_schema):
+    async def add(self, session: AsyncSession, meeting_create_schema, current_user):
         meeting = meeting_create_schema.model_dump()
+        meeting["created_by"] = current_user.id
         participants = [user.get("username") for user in meeting.pop("participants")]
         new_meeting = await self.repository.insert(session, meeting, participants)
-        return MeetingResponseSchema.model_validate(new_meeting)
+        if new_meeting:
+            return MeetingResponseSchema.model_validate(new_meeting)
+        return None
 
     async def update(self, session, id, **values):
         update_meeting = await super().update(session, id, **values)

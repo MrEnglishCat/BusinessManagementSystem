@@ -34,6 +34,25 @@ async def get_meetings(
 
 
 @meeting_router.get(
+    "/canceled",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_all_canceled(
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    meetings = await meeting_service.get_all_canceled(
+        session=session,
+    )
+    if meetings:
+        return ResponseFactory.ok(data=meetings)
+    return ResponseFactory.error(message="Meetings is not found")
+
+
+@meeting_router.get(
     "/{meeting_id}",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
@@ -64,15 +83,13 @@ async def post_meetings(
     ),
     current_user: UserModel = Depends(current_active_user),
 ):
-
-    meeting.created_by = current_user.id
-
-    print("TEST", current_user)
+    print(">" * 10)
+    print("meetings", meeting)
+    print(">" * 10)
     new_meeting = await meeting_service.add(
-        session=session, meeting_create_schema=meeting
+        session=session, meeting_create_schema=meeting, current_user=current_user
     )
-    # DEVELOPMENT created_by получать через зависимость авторизованного пользвоателя.
-    return ResponseFactory.ok(data=new_meeting)
+    return ResponseFactory.ok(message=f"Meeting {new_meeting.title} is created")
 
 
 @meeting_router.delete(

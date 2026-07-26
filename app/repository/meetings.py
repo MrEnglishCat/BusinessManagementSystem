@@ -17,6 +17,11 @@ class MeetingRepository(BaseRepository):
         result = await session.execute(stmt)
         return result.scalars().all()
 
+    async def get_all_canceled(self, session: AsyncSession):
+        stmt = select(self.model).where(self.model.status == MeetingStatusEmun.CANCELED)
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
     async def cancel_meeting(self, session: AsyncSession, meeting: int):
         stmt = (
             update(self.model)
