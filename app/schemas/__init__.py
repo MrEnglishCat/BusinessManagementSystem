@@ -15,6 +15,8 @@ from .tasks import (
     TaskResponseSchema,
     TaskCommentBaseSchema,
     TaskCommentResponseSchema,
+    TaskUpdateSchema,
+    TaskCommentCreateSchema,
 )
 from .teams import TeamBaseSchema, TeamResponseSchema, TeamLinkUserSchema
 from .users.users import (
@@ -24,6 +26,7 @@ from .users.users import (
     AfterAuthUserSchema,
     UserIDSchema,
     UserMeetingSchema,
+    UserResponseAllUsersSchema,
 )
 
 MeetingBaseSchema.model_rebuild()

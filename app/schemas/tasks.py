@@ -36,6 +36,7 @@ class TaskUpdateSchema(BasePydanticModel):
 
 
 class TaskResponseSchema(TaskBaseSchema, TaskIDSchema):
+    status: Enum
     created_at: datetime = Field(
         title="Created at",
         json_schema_extra={"example": "2026-05-29 23:23"},
@@ -50,6 +51,11 @@ class TaskCommentBaseSchema(BasePydanticModel):
     content: str = Field(title="Content")
     task_id: int = Field(title="Task")
     user_id: int = Field(title="User")
+
+
+class TaskCommentCreateSchema(BasePydanticModel):
+    content: str = Field(title="Content")
+    task_id: int = Field(title="Task")
 
 
 class TaskCommentResponseSchema(

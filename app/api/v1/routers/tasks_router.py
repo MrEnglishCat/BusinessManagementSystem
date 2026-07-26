@@ -6,7 +6,7 @@ from ....dependencies.service import get_service_dependency
 from ....auth.config import current_active_user
 from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....services.base import BaseService
-from ....schemas import TaskBaseSchema
+from ....schemas import TaskBaseSchema, TaskUpdateSchema
 from ....models import UserModel
 
 tasks_router = APIRouter(prefix="/tasks", tags=["Tasks"])
@@ -85,7 +85,7 @@ async def delete_task_by_id(
     response_model=BaseResponse,
 )
 async def patch_team_by_id(
-    task: TaskBaseSchema,
+    task: TaskUpdateSchema,
     task_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
     task_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TASK)),

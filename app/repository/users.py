@@ -8,7 +8,12 @@ from ..models import UserModel, MeetingModel
 class UserRepository(BaseRepository):
     model = UserModel
 
-    async def get_user_meetings(self, session: AsyncSession, user_id):
+    async def get_all_with_teams(self, session: AsyncSession):
+        stmt = select(self.model).options(selectinload(self.model.team))
+        coro_result = await session.execute(stmt)
+        return coro_result.scalars().all()
+
+    async def get_user_meetings(self, session: AsyncSession, user_id: int):
         stmt = (
             select(self.model)
             .options(selectinload(self.model.meetings))
@@ -16,9 +21,9 @@ class UserRepository(BaseRepository):
         )
         user_meetings = await session.execute(stmt)
 
-        return user_meetings.scalar()
+        return user_meetings.all()
 
-    async def get_user_evaluations(self, session: AsyncSession, user_id):
+    async def get_user_evaluations(self, session: AsyncSession, user_id: int):
         stmt = (
             select(self.model)
             .options(selectinload(self.model.evaluations))

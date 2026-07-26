@@ -3,7 +3,32 @@ import { login } from './api.js';
 export function isLoggedIn() {
     return !!localStorage.getItem('token');
 }
-
+// 🔥 ЭКСПОРТ ФУНКЦИИ ПОЛУЧЕНИЯ ID ПОЛЬЗОВАТЕЛЯ
+export function getCurrentUserId() {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    try {
+        // JWT состоит из 3 частей, разделенных точкой. Нас интересует вторая (payload)
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join('')
+        );
+        
+        const payload = JSON.parse(jsonPayload);
+        
+        // fastapi-users обычно кладет ID в поле 'sub' (как строку) или 'user_id'
+        const rawId = payload.sub || payload.user_id;
+        
+        return rawId ? parseInt(rawId) : null;
+    } catch (e) {
+        console.error("Не удалось распарсить JWT токен:", e);
+        return null;
+    }
+}
 export async function handleLogin(container) {
     container.innerHTML = `
         <div class="login-box">
@@ -32,3 +57,5 @@ export function logout() {
     localStorage.removeItem('token');
     window.location.hash = '#/login';
 }
+
+

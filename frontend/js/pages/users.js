@@ -11,20 +11,52 @@ export async function renderUsers(container) {
     const loadUsers = async () => {
         const list = document.getElementById('users-list');
         list.innerHTML = '<p>Загрузка...</p>';
+        
         try {
-            const users = await get('/v1/users/');
+            // 🔥 ПАРАЛЛЕЛЬНАЯ загрузка пользователей и команд
+            const [users, teams] = await Promise.all([
+                get('/v1/users/'),
+                get('/v1/teams/').catch(() => []) // Если команды не загрузились — не ломаем страницу
+            ]);
+            
+            // 🔥 Создаём Map для быстрого O(1) доступа: teamId -> teamName
+            const teamMap = new Map();
+            (teams || []).forEach(t => teamMap.set(t.id, t.name));
+            
             list.innerHTML = '';
             renderTable(list, {
                 columns: [
                     { key: 'id', label: 'ID' },
                     { key: 'username', label: 'Username' },
                     { key: 'email', label: 'Email' },
-                    { key: 'role', label: 'Роль', render: r => `<span class="badge status-${r.role}">${r.role}</span>` },
-                    { key: 'is_active', label: 'Активен', render: r => r.is_active ? '✅' : '❌' }
+                    { 
+                        key: 'role', 
+                        label: 'Роль', 
+                        render: r => `<span class="badge status-${r.role}">${r.role}</span>` 
+                    },
+                    // 🔥 НОВАЯ КОЛОНКА: Команда
+                    { 
+                        key: 'team_id', 
+                        label: 'Команда', 
+                        render: r => {
+                            if (!r.team_id) {
+                                return '<span class="no-team">— не в команде —</span>';
+                            }
+                            const teamName = teamMap.get(r.team_id);
+                            if (!teamName) {
+                                return `<span class="no-team" title="Команда ID ${r.team_id} не найдена">ID ${r.team_id} ⚠️</span>`;
+                            }
+                            return `<span class="team-badge">${escapeHtml(teamName)}</span>`;
+                        }
+                    },
+                    { 
+                        key: 'is_active', 
+                        label: 'Активен', 
+                        render: r => r.is_active ? '✅' : '❌' 
+                    }
                 ],
                 rows: users || [],
                 onEdit: (id) => openUserForm(id),
-                // 🔥 ПЕРЕДАЁМ loadUsers как третий аргумент
                 onDelete: (id) => deleteUser(id, users, loadUsers)
             });
         } catch (e) { 
@@ -33,7 +65,6 @@ export async function renderUsers(container) {
     };
 
     window.editItem = openUserForm;
-    // 🔥 ПЕРЕДАЁМ loadUsers как третий аргумент
     window.deleteItem = (id) => deleteUser(id, null, loadUsers);
     
     document.getElementById('add-user-btn').onclick = () => openUserForm();
@@ -42,14 +73,23 @@ export async function renderUsers(container) {
         const wrap = document.createElement('div');
         let user = {};
         
-        if (id) {
-            try {
-                user = await get(`/v1/users/${id}`);
-            } catch (e) {
-                alert(`Не удалось загрузить данные: ${e.message}`);
-                return;
-            }
-        }
+        // 🔥 Параллельно загружаем пользователя и команды (для выпадающего списка)
+        const [userData, teams] = await Promise.all([
+            id ? get(`/v1/users/${id}`).catch(e => { 
+                alert(`Не удалось загрузить данные: ${e.message}`); 
+                return null; 
+            }) : Promise.resolve({}),
+            get('/v1/teams/').catch(() => [])
+        ]);
+        
+        if (id && !userData) return;
+        user = userData;
+        
+        // Создаём опции для выбора команды
+        const teamOptions = [
+            { value: '', label: '— Не в команде —' },
+            ...(teams || []).map(t => ({ value: t.id, label: t.name }))
+        ];
         
         const fields = [
             { key: 'username', label: 'Username', required: true, value: user.username || '' },
@@ -65,6 +105,14 @@ export async function renderUsers(container) {
                     { value: 'admin', label: 'Admin' }
                 ], 
                 value: user.role || 'user' 
+            },
+            // 🔥 НОВОЕ ПОЛЕ: выбор команды
+            { 
+                key: 'team_id', 
+                label: 'Команда', 
+                type: 'select', 
+                options: teamOptions,
+                value: user.team_id || ''
             },
             { 
                 key: 'is_active', 
@@ -90,7 +138,8 @@ export async function renderUsers(container) {
             submitText: id ? 'Обновить' : 'Создать',
             onSubmit: async (data) => {
                 data.is_active = data.is_active === 'true';
-                if (data.team_id) data.team_id = parseInt(data.team_id);
+                // Преобразуем team_id: пустая строка -> null, иначе число
+                data.team_id = data.team_id ? parseInt(data.team_id) : null;
                 
                 if (!id) {
                     if (data.password !== data.repeat_password) {
@@ -120,7 +169,7 @@ export async function renderUsers(container) {
 }
 
 // =====================================================================
-// 🔥 ФУНКЦИЯ УДАЛЕНИЯ: добавлен параметр reloadCallback
+// ФУНКЦИЯ УДАЛЕНИЯ
 // =====================================================================
 async function deleteUser(id, usersList, reloadCallback) {
     const user = usersList?.find(u => String(u.id) === String(id));
@@ -139,11 +188,7 @@ async function deleteUser(id, usersList, reloadCallback) {
     try {
         await del(`/v1/users/${id}`);
         showNotification(`Пользователь "${userName}" успешно удален`, 'success');
-        
-        // 🔥 Вызываем переданный callback вместо прямой ссылки на loadUsers
-        if (typeof reloadCallback === 'function') {
-            await reloadCallback();
-        }
+        if (typeof reloadCallback === 'function') await reloadCallback();
     } catch (error) {
         console.error('Ошибка при удалении:', error);
         
@@ -190,4 +235,14 @@ function showNotification(message, type = 'info') {
         notification.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// =====================================================================
+// 🔥 УТИЛИТА: защита от XSS при отображении названий команд
+// =====================================================================
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }

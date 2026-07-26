@@ -1,12 +1,18 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseService
-from ..schemas.tasks import TaskResponseSchema, TaskCommentResponseSchema
+from ..schemas import (
+    TaskResponseSchema,
+    TaskCommentResponseSchema,
+    TaskCommentCreateSchema,
+)
 
 
 class TaskService(BaseService):
 
     async def get_all(self, session: AsyncSession):
         tasks = await super().get_all(session)
+
+        #
         if tasks:
             return [TaskResponseSchema.model_validate(task) for task in tasks]
         return None
@@ -30,7 +36,7 @@ class TaskService(BaseService):
     async def update(self, session, id, **values):
         update_task = await super().update(session, id, **values)
         if update_task:
-            return TaskCommentResponseSchema.model_validate(update_task)
+            return TaskResponseSchema.model_validate(update_task)
         return None
 
 

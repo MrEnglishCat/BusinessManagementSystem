@@ -1,4 +1,4 @@
-export function renderTable(container, { columns, rows, onEdit, onDelete }) {
+export function renderTable(container, { columns, rows, onEdit, onDelete, onView }) {
     const table = document.createElement('table');
     table.className = 'data-table';
     table.innerHTML = `
@@ -8,13 +8,23 @@ export function renderTable(container, { columns, rows, onEdit, onDelete }) {
                 <tr data-id="${r.id}">
                     ${columns.map(c => `<td>${c.render ? c.render(r) : (r[c.key] ?? '-')}</td>`).join('')}
                     <td class="actions">
-                        ${onEdit ? `<button class="btn-sm" onclick="window.editItem('${r.id}')">Edit</button>` : ''}
-                        ${onDelete ? `<button class="btn-sm btn-danger" onclick="window.deleteItem('${r.id}')">Del</button>` : ''}
+                        ${onView ? `<button class="btn-sm btn-info view-btn" title="Просмотр">👁️</button>` : ''}
+                        ${onEdit ? `<button class="btn-sm btn-secondary edit-btn" title="Редактировать">✏️</button>` : ''}
+                        ${onDelete ? `<button class="btn-sm btn-danger delete-btn" title="Удалить">🗑️</button>` : ''}
                     </td>
                 </tr>
             `).join('')}
         </tbody>
     `;
+
+    // Навешиваем обработчики событий
+    table.querySelectorAll('tbody tr').forEach(tr => {
+        const id = tr.dataset.id;
+        tr.querySelector('.view-btn')?.addEventListener('click', () => onView(id));
+        tr.querySelector('.edit-btn')?.addEventListener('click', () => onEdit(id));
+        tr.querySelector('.delete-btn')?.addEventListener('click', () => onDelete(id));
+    });
+
     container.appendChild(table);
 }
 
