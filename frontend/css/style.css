@@ -713,3 +713,257 @@ nav a.active {
     font-size: 0.8rem;
     font-weight: 500;
 }
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ТАБЫ ВНУТРИ МОДАЛКИ КАЛЕНДАРЯ                       */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-tabs-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.modal-tab-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.6rem; /* Чтобы перекрыть нижнюю границу контейнера */
+}
+
+.modal-tab-btn:hover {
+    color: #334155;
+    background: #f8fafc;
+}
+
+.modal-tab-btn.active {
+    color: #2563eb;
+    font-weight: 600;
+    border-bottom: 2px solid #2563eb;
+    background: transparent;
+}
+
+/* Скрытие/показ контента табов */
+.modal-tab-content {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Кнопка на всю ширину для добавления */
+.btn-block {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* Пустое состояние внутри таба */
+.empty-state {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem 0;
+    margin: 0;
+}
+
+/* Улучшаем список событий внутри модалки */
+.modal-body .events-list {
+    max-height: 35vh; /* Ограничиваем высоту списка внутри модалки */
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* УПРАВЛЕНИЕ УЧАСТНИКАМИ ВСТРЕЧИ                      */
+/* ═══════════════════════════════════════════════════ */
+
+.participants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 25vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #3b82f6;
+    font-size: 0.9rem;
+}
+
+.empty-state-small {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.add-participant-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.form-select {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.add-participant-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ КНОПОК                         */
+/* ═══════════════════════════════════════════════════ */
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+    background: #d97706;
+}
+
+/* Компактное расположение кнопок в ячейке действий */
+.data-table td.actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* СПИСОК ДОСТУПНЫХ ПОЛЬЗОВАТЕЛЕЙ С ЧЕКБОКСАМИ         */
+/* ═══════════════════════════════════════════════════ */
+
+.available-users-list {
+    max-height: 25vh;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-size: 0.9rem;
+    user-select: none; /* Запрещаем выделение текста при быстрых кликах */
+}
+
+.checkbox-item:hover {
+    background: #e2e8f0;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #2563eb; /* Синий цвет галочки */
+}
+
+.checkbox-item span {
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Кнопка на всю ширину */
+.btn-block {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* ПОИСК ПОЛЬЗОВАТЕЛЕЙ                                 */
+/* ═══════════════════════════════════════════════════ */
+
+.search-container {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    padding-right: 4rem; /* Место для счетчика */
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.search-count {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+/* Подсветка совпадений */
+mark {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 600;
+}

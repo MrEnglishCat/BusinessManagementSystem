@@ -5,7 +5,7 @@ from datetime import datetime, UTC
 
 from app.repository.users import UserRepository
 from .base_repository import BaseRepository
-from ..models import MeetingModel, meeting_participants
+from ..models import MeetingModel, meeting_participants, UserModel
 from ..utils.enums_service import MeetingStatusEmun
 
 
@@ -99,3 +99,21 @@ class MeetingRepository(BaseRepository):
         scalar_result = result.scalar_one_or_none()
 
         return scalar_result is not None
+
+    async def add_paricipants(
+        self, session: AsyncSession, meeting_id: int, participants_username: list
+    ):
+
+        stmt = (
+            insert(meeting_participants)
+            .from_select(
+                ["meeting_id", "user_id"],
+                select(
+                    select(meeting_id).label("meeting_id"),
+                    UserModel.id.label("user_id"),
+                ).where(UserModel.username.in_(participants_username)),
+            )
+            .returning(meeting_participants)
+        )
+        execute_result = await session.execute(stmt)
+        return execute_result.all()

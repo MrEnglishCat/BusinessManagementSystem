@@ -194,68 +194,84 @@ async function openDayDetails(dateKey) {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
     });
     
-    // 🔥 Создаем футер ОТДЕЛЬНО от body
-    const footerWrap = document.createElement('div');
-    footerWrap.className = 'footer-actions';
-    footerWrap.innerHTML = `
-        <button class="btn-primary" id="quick-task">+ Задача</button>
-        <button class="btn-secondary" id="quick-meeting">+ Встреча</button>
-    `;
-    
-    if (events.length === 0) {
-        wrap.innerHTML = `<p style="color: #64748b; text-align: center; padding: 1rem 0;">Нет событий на эту дату</p>`;
-        showModal(`📅 ${dateStr}`, wrap, null, footerWrap);
-        
-        document.getElementById('quick-task').onclick = () => createQuick('task', dateKey);
-        document.getElementById('quick-meeting').onclick = () => createQuick('meeting', dateKey);
-        return;
-    }
-    
     const tasks = events.filter(e => e._type === 'task');
     const meetings = events.filter(e => e._type === 'meeting');
-    
+
+    // 🔥 Формируем HTML с табами внутри модалки
     wrap.innerHTML = `
-        ${meetings.length ? `
-            <h4>🤝 Встречи (${meetings.length})</h4>
-            <div class="events-list">
-                ${meetings.map(m => `
-                    <div class="event-item meeting">
-                        <div class="event-time-block">${(m.start_time || '').slice(11, 16) || '—'}</div>
-                        <div class="event-info">
-                            <strong>${escapeHtml(m.title)}</strong>
-                            <div class="event-meta">
-                                <span class="badge status-${m.status}">${m.status}</span>
-                                ${m.location ? `<span>📍 ${escapeHtml(m.location)}</span>` : ''}
+        <!-- Навигация по табам внутри модалки -->
+        <div class="modal-tabs-container">
+            <button class="modal-tab-btn active" data-tab="tasks">
+                📋 Задачи (${tasks.length})
+            </button>
+            <button class="modal-tab-btn" data-tab="meetings">
+                🤝 Встречи (${meetings.length})
+            </button>
+        </div>
+
+        <!-- Контент вкладки "Задачи" -->
+        <div class="modal-tab-content active" id="modal-tab-tasks">
+            ${tasks.length === 0 
+                ? '<p class="empty-state">На этот день задач нет</p>' 
+                : `<div class="events-list">
+                    ${tasks.map(t => `
+                        <div class="event-item task">
+                            <div class="event-time-block">${(t.deadline || '').slice(11, 16) || '—'}</div>
+                            <div class="event-info">
+                                <strong>${escapeHtml(t.title)}</strong>
+                                <div class="event-meta">
+                                    <span class="badge status-${t.status}">${t.status}</span>
+                                </div>
+                                ${t.description ? `<div class="event-desc">${escapeHtml(t.description)}</div>` : ''}
                             </div>
-                            ${m.description ? `<div class="event-desc">${escapeHtml(m.description)}</div>` : ''}
                         </div>
-                    </div>
-                `).join('')}
-            </div>
-        ` : ''}
-        
-        ${tasks.length ? `
-            <h4>✅ Задачи (${tasks.length})</h4>
-            <div class="events-list">
-                ${tasks.map(t => `
-                    <div class="event-item task">
-                        <div class="event-time-block">${(t.deadline || '').slice(11, 16) || '—'}</div>
-                        <div class="event-info">
-                            <strong>${escapeHtml(t.title)}</strong>
-                            <div class="event-meta">
-                                <span class="badge status-${t.status}">${t.status}</span>
+                    `).join('')}
+                   </div>`
+            }
+            <button class="btn-primary btn-block" id="quick-task">+ Добавить задачу</button>
+        </div>
+
+        <!-- Контент вкладки "Встречи" -->
+        <div class="modal-tab-content" id="modal-tab-meetings">
+            ${meetings.length === 0 
+                ? '<p class="empty-state">На этот день встреч нет</p>' 
+                : `<div class="events-list">
+                    ${meetings.map(m => `
+                        <div class="event-item meeting">
+                            <div class="event-time-block">${(m.start_time || '').slice(11, 16) || '—'}</div>
+                            <div class="event-info">
+                                <strong>${escapeHtml(m.title)}</strong>
+                                <div class="event-meta">
+                                    <span class="badge status-${m.status}">${m.status}</span>
+                                    ${m.location ? `<span>📍 ${escapeHtml(m.location)}</span>` : ''}
+                                </div>
+                                ${m.description ? `<div class="event-desc">${escapeHtml(m.description)}</div>` : ''}
                             </div>
-                            ${t.description ? `<div class="event-desc">${escapeHtml(t.description)}</div>` : ''}
                         </div>
-                    </div>
-                `).join('')}
-            </div>
-        ` : ''}
+                    `).join('')}
+                   </div>`
+            }
+            <button class="btn-primary btn-block" id="quick-meeting">+ Добавить встречу</button>
+        </div>
     `;
+
+    // 🔥 Логика переключения табов внутри модалки
+    wrap.querySelectorAll('.modal-tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            // Убираем active у всех кнопок и контента
+            wrap.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+            wrap.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Добавляем active нажатой кнопке и соответствующему контенту
+            btn.classList.add('active');
+            document.getElementById(`modal-tab-${btn.dataset.tab}`).classList.add('active');
+        };
+    });
+
+    // 🔥 Открываем модалку БЕЗ кастомного футера (кнопки теперь внутри контента)
+    showModal(`📅 ${dateStr}`, wrap);
     
-    // 🔥 Передаем footerWrap как 4-й параметр
-    showModal(`📅 ${dateStr}`, wrap, null, footerWrap);
-    
+    // Привязываем обработчики к кнопкам добавления
     document.getElementById('quick-task').onclick = () => createQuick('task', dateKey);
     document.getElementById('quick-meeting').onclick = () => createQuick('meeting', dateKey);
 }

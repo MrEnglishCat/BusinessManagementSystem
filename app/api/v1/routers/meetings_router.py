@@ -7,7 +7,12 @@ from ....config.db import get_async_session
 from ....config.response import BaseResponse, ResponseFactory
 from ....dependencies.service import get_service_dependency
 from ....utils.enums_service import ServiceTypeEnum
-from ....schemas import MeetingCancelSchema, MeetingCreateSchema
+from ....schemas import (
+    MeetingCancelSchema,
+    MeetingCreateSchema,
+    MeetingUpdateSchema,
+    MeetingParticipantUpdateSchema,
+)
 from ....models import UserModel
 from ....auth.config import current_active_user
 
@@ -130,19 +135,61 @@ async def cancel_meeting(
     return ResponseFactory.error(message="Meeting is not found")
 
 
-@meeting_router.patch(
-    "/{meeting_id}",
+@meeting_router.post(
+    "/{meeting_id}/add_participants",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def patch_team_by_id(
-    meeting: MeetingCreateSchema,
+async def add_team_partipitians(
+    participants_schema: MeetingParticipantUpdateSchema = Body(),
     meeting_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
 ):
+    update_meeting = await meeting_service.add_participants(
+        session=session,
+        meeting_id=meeting_id,
+        participants_schema=participants_schema,
+    )
+    if update_meeting:
+        return ResponseFactory.ok(message="Participants is success add")
+    return ResponseFactory.error(message="Participants is not found")
+
+
+@meeting_router.delete(
+    "/{meeting_id}/add_participants",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def delete_team_partipitians(
+    participants_schema: MeetingParticipantUpdateSchema = Body(),
+    meeting_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+    print(f"{participants_schema=}")
+
+    return ResponseFactory.error(message="Participants is not found")
+
+
+@meeting_router.patch(
+    "/{meeting_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def patch_team_by_id(
+    meeting: MeetingUpdateSchema,
+    meeting_id: int = Path(),
+    session: AsyncSession = Depends(get_async_session),
+    meeting_service: BaseService = Depends(
+        get_service_dependency(ServiceTypeEnum.MEETING)
+    ),
+):
+
     update_meeting = await meeting_service.update(
         session=session, id=meeting_id, **meeting.model_dump()
     )

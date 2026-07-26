@@ -34,7 +34,7 @@ export async function handleLogin(container) {
         <div class="login-box">
             <h2>Вход в BMS</h2>
             <form id="login-form">
-                <div class="form-group"><label>Email / Username</label><input name="username" required></div>
+                <div class="form-group"><label>Email</label><input name="username" required></div>
                 <div class="form-group"><label>Пароль</label><input name="password" type="password" required></div>
                 <button type="submit" class="btn-primary">Войти</button>
             </form>

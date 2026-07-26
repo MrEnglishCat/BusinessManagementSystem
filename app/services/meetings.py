@@ -1,7 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from .base import BaseService
-from ..schemas import MeetingResponseSchema, MeetingCancelSchema, MeetingCreateSchema
+from ..schemas import (
+    MeetingResponseSchema,
+    MeetingCancelSchema,
+    MeetingCreateSchema,
+    MeetingParticipantUpdateSchema,
+)
+from ..repository import UserRepository
 
 
 class MeetingService(BaseService):
@@ -53,4 +60,22 @@ class MeetingService(BaseService):
         )
         if canceled_meeting_id:
             return canceled_meeting_id
+        return None
+
+    async def add_participants(
+        self,
+        session: AsyncSession,
+        meeting_id: int,
+        participants_schema: MeetingParticipantUpdateSchema,
+    ):
+        participants_username = [
+            participant.username for participant in participants_schema.participants
+        ]
+        db_result = await self.repository.add_paricipants(
+            session=session,
+            meeting_id=meeting_id,
+            participants_username=participants_username,
+        )
+        if db_result:
+            return db_result
         return None
