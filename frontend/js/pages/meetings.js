@@ -119,17 +119,6 @@ export async function renderMeetings(container) {
                             return `<button class="btn-sm btn-secondary manage-participants-btn" data-id="${r.id}">👥 ${count}</button>`;
                         }
                     },
-                    // {
-                    //     key: 'id',
-                    //     label: 'Действия',
-                    //     render: r => {
-                    //         const rawStatus = r.status ? String(r.status).trim().toLowerCase() : '';
-                    //         if (rawStatus === 'planned' || rawStatus === 'in_progress') {
-                    //             return `<button class="btn-sm btn-warning cancel-btn" data-id="${r.id}">Отменить</button>`;
-                    //         }
-                    //         return '<span style="color: #94a3b8; font-size: 0.85rem;">—</span>';
-                    //     }
-                    // }
                 ],
                 rows: meetings,
                 onEdit: (id) => openMeetingForm(id),
