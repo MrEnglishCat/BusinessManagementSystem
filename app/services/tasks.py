@@ -12,9 +12,6 @@ class TaskService(BaseService):
 
     async def get_all(self, session: AsyncSession):
         tasks = await self.repository.get_all(session=session)
-
-        print(f"TEST {tasks=}")
-        print(f"TEST {tasks[0].team=}")
         if tasks:
             return [TaskResponseSchema.model_validate(task) for task in tasks]
         return None

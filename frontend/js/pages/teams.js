@@ -129,7 +129,7 @@ export async function renderTeams(container) {
 
 
 // =====================================================================
-// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ КОМАНДЫ (С ТАБАМИ, ПОИСКОМ И МАССОВЫМИ ДЕЙСТВИЯМИ)
+// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ КОМАНДЫ (С АВТООБНОВЛЕНИЕМ СПИСКОВ)
 // =====================================================================
 async function manageTeamMembers(teamId, reloadCallback) {
     const wrap = document.createElement('div');
@@ -137,16 +137,29 @@ async function manageTeamMembers(teamId, reloadCallback) {
     const modalInstance = showModal('Управление участниками команды', wrap);
 
     try {
-        // 🔥 1. Параллельно загружаем текущих участников команды и всех пользователей системы
-        const [currentMembers, allUsers] = await Promise.all([
-            get(`/v1/teams/${teamId}/members`).catch(() => []),
-            get('/v1/users/').catch(() => [])
-        ]);
+        // 🔥 1. Используем let, чтобы можно было обновлять эти массивы
+        let currentMembers = [];
+        let allUsers = [];
+
+        // 🔥 2. Функция для синхронизации данных с бэкендом
+        const refreshData = async () => {
+            const [members, users] = await Promise.all([
+                get(`/v1/teams/${teamId}/members`).catch(() => []),
+                get('/v1/users/without_teams').catch(() => [])
+            ]);
+            currentMembers = members;
+            allUsers = users;
+        };
+
+        // Первичная загрузка
+        await refreshData();
 
         let searchQuery = '';
-        let currentModalTab = 'current'; // Состояние вкладки: 'current' или 'add'
+        let currentModalTab = 'current';
 
-        // 🔥 Функция ДОБАВЛЕНИЯ участников (обновленная под usernames)
+        // =================================================================
+        // Функция ДОБАВЛЕНИЯ
+        // =================================================================
         const addMembers = async () => {
             const addBtn = document.getElementById('add-selected-btn');
             const checkboxes = wrap.querySelectorAll('.add-checkbox:checked');
@@ -158,22 +171,17 @@ async function manageTeamMembers(teamId, reloadCallback) {
 
             addBtn.disabled = true;
             addBtn.textContent = 'Добавление...';
-            
-            // 🔥 Собираем массив username (строк), а не ID
             const usernamesToAdd = Array.from(checkboxes).map(cb => cb.value);
 
             try {
-                // 🔥 Отправляем на новый эндпоинт с правильным payload
                 const response = await post(`/v1/teams/${teamId}/members`, { 
                     usernames: usernamesToAdd 
                 });
                 
                 showNotification(response?.message || `Добавлено участников: ${usernamesToAdd.length}`, 'success');
                 
-                // Обновляем локальный список участников
-                const newMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
-                currentMembers.length = 0;
-                currentMembers.push(...newMembers);
+                // 🔥 ОБНОВЛЯЕМ данные с бэкенда, чтобы списки были актуальными
+                await refreshData();
                 
                 searchQuery = '';
                 currentModalTab = 'current'; // Переключаемся на вкладку "Текущие"
@@ -191,7 +199,9 @@ async function manageTeamMembers(teamId, reloadCallback) {
             }
         };
 
-        // 🔥 Функция МАССОВОГО УДАЛЕНИЯ (через usernames)
+        // =================================================================
+        // Функция МАССОВОГО УДАЛЕНИЯ
+        // =================================================================
         const removeMembers = async () => {
             const removeBtn = document.getElementById('remove-selected-btn');
             const checkboxes = wrap.querySelectorAll('.remove-checkbox:checked');
@@ -201,21 +211,22 @@ async function manageTeamMembers(teamId, reloadCallback) {
                 return;
             }
 
-            // 🔥 value у remove-checkbox тоже должен быть username (см. ниже)
             const usernamesToRemove = Array.from(checkboxes).map(cb => cb.value);
-            const confirmed = confirm(`Удалить ${usernamesToRemove.length} участник(ов) из команды?`);
+            const confirmed = confirm(`Вы уверены, что хотите удалить ${usernamesToRemove.length} участник(ов) из команды?`);
             if (!confirmed) return;
 
             removeBtn.disabled = true;
             removeBtn.textContent = 'Удаление...';
 
             try {
-                await post(`/v1/teams/${teamId}/remove_members`, { usernames: usernamesToRemove });
-                showNotification(`Удалено участников: ${usernamesToRemove.length}`, 'success');
+                const response = await del(`/v1/teams/${teamId}/members`, { 
+                    usernames: usernamesToRemove
+                });
                 
-                const updatedMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
-                currentMembers.length = 0;
-                currentMembers.push(...updatedMembers);
+                showNotification(response?.message || `Удалено участников: ${usernamesToRemove.length}`, 'success');
+                
+                // 🔥 ОБНОВЛЯЕМ данные с бэкенда
+                await refreshData();
                 
                 renderContent();
                 if (typeof reloadCallback === 'function') await reloadCallback();
@@ -230,7 +241,9 @@ async function manageTeamMembers(teamId, reloadCallback) {
             }
         };
 
-        // 🔥 Функция единичного УДАЛЕНИЯ
+        // =================================================================
+        // Функция единичного УДАЛЕНИЯ
+        // =================================================================
         const removeSingleMember = async (username) => {
             const confirmed = confirm(`Удалить пользователя "${username}" из команды?`);
             if (!confirmed) return;
@@ -242,13 +255,14 @@ async function manageTeamMembers(teamId, reloadCallback) {
             }
 
             try {
-                // 🔥 Единичное удаление через тот же эндпоинт, но с одним username
-                await post(`/v1/teams/${teamId}/remove_members`, { usernames: [username] });
+                await del(`/v1/teams/${teamId}/members`, { 
+                    usernames: [username]
+                });
+                
                 showNotification(`Пользователь "${username}" удален из команды`, 'success');
                 
-                const updatedMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
-                currentMembers.length = 0;
-                currentMembers.push(...updatedMembers);
+                // 🔥 ОБНОВЛЯЕМ данные с бэкенда
+                await refreshData();
                 
                 renderContent();
                 if (typeof reloadCallback === 'function') await reloadCallback();
@@ -261,7 +275,9 @@ async function manageTeamMembers(teamId, reloadCallback) {
             }
         };
 
-        // 🔥 5. Вспомогательные функции
+        // =================================================================
+        // Вспомогательные функции
+        // =================================================================
         const filterUsers = (users, query) => {
             if (!query.trim()) return users;
             const lowerQuery = query.toLowerCase();
@@ -280,13 +296,15 @@ async function manageTeamMembers(teamId, reloadCallback) {
 
         const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // 🔥 6. Функция отрисовки (с табами)
+        // =================================================================
+        // Функция отрисовки
+        // =================================================================
         const renderContent = () => {
-            const existingUserIds = new Set(currentMembers.map(m => m.id));
-            const allAvailableUsers = (allUsers || []).filter(u => !existingUserIds.has(u.id));
+            // Фильтруем: показываем только тех, кого еще нет в этой команде
+            const existingUsernames = new Set(currentMembers.map(m => m.username));
+            const allAvailableUsers = (allUsers || []).filter(u => !existingUsernames.has(u.username));
             const filteredUsers = filterUsers(allAvailableUsers, searchQuery);
 
-            // Рендерим кнопки вкладок
             let html = `
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0;">
                     <button class="modal-tab-btn" data-tab="current" style="flex: 1; padding: 0.6rem; border: none; background: transparent; border-bottom: 3px solid ${currentModalTab === 'current' ? '#2563eb' : 'transparent'}; color: ${currentModalTab === 'current' ? '#2563eb' : '#64748b'}; font-weight: 600; cursor: pointer; transition: all 0.2s;">
@@ -298,7 +316,6 @@ async function manageTeamMembers(teamId, reloadCallback) {
                 </div>
             `;
 
-            // Содержимое вкладки "Текущие"
             if (currentModalTab === 'current') {
                 html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Список участников</h4>`;
                 
@@ -325,13 +342,11 @@ async function manageTeamMembers(teamId, reloadCallback) {
                         </button>
                     `;
                 }
-            } 
-            // Содержимое вкладки "Добавить"
-            else {
+            } else {
                 html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Добавить участников</h4>`;
 
                 if (allAvailableUsers.length === 0) {
-                    html += `<p class="empty-state-small">Все пользователи системы уже в команде</p>`;
+                    html += `<p class="empty-state-small">Все доступные пользователи уже в команде</p>`;
                 } else {
                     html += `
                         <div class="search-container" style="margin-bottom: 0.75rem;">
@@ -373,7 +388,7 @@ async function manageTeamMembers(teamId, reloadCallback) {
 
             wrap.innerHTML = html;
 
-            // 🔥 7. Обработчики переключения вкладок
+            // Обработчики вкладок
             wrap.querySelectorAll('.modal-tab-btn').forEach(btn => {
                 btn.onclick = () => {
                     currentModalTab = btn.dataset.tab;
@@ -381,7 +396,7 @@ async function manageTeamMembers(teamId, reloadCallback) {
                 };
             });
 
-            // 🔥 8. Логика блокировки единичных кнопок удаления
+            // Логика блокировки единичных кнопок удаления
             if (currentModalTab === 'current') {
                 const updateSingleDeleteButtons = () => {
                     const checkedCount = wrap.querySelectorAll('.remove-checkbox:checked').length;
@@ -401,7 +416,7 @@ async function manageTeamMembers(teamId, reloadCallback) {
                 updateSingleDeleteButtons();
             }
 
-            // 🔥 9. Обработчик поиска
+            // Обработчик поиска
             if (currentModalTab === 'add') {
                 const searchInput = document.getElementById('user-search');
                 if (searchInput) {
@@ -421,7 +436,7 @@ async function manageTeamMembers(teamId, reloadCallback) {
                 }
             }
 
-            // 🔥 10. Обработчики кнопок действий
+            // Обработчики кнопок действий
             const addBtn = document.getElementById('add-selected-btn');
             if (addBtn) addBtn.onclick = addMembers;
 
@@ -431,7 +446,7 @@ async function manageTeamMembers(teamId, reloadCallback) {
             wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
                 btn.onclick = async (e) => {
                     e.preventDefault();
-                    await removeSingleMember(parseInt(btn.dataset.userId));
+                    await removeSingleMember(btn.dataset.username);
                 };
             });
         };

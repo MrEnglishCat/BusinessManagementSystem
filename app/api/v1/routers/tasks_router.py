@@ -56,10 +56,10 @@ async def post_tasks(
 ):
     if current_user.role not in (UserRole.MANAGER, UserRole.ADMIN):
         return ResponseFactory.error("Only a manager can create tasks")
-
+    print("HERERERRERERER")
     task_dump = task.model_dump()
     task_dump["created_by"] = current_user.id
-    new_task = await task_service.add(session=session, **task_dump)
+    await task_service.add(session=session, **task_dump)
     return ResponseFactory.ok(message="New task is add")
 
 

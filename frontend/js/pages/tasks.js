@@ -146,12 +146,18 @@ export async function renderTasks(container) {
         const modalInstance = showModal(id ? 'Редактировать задачу' : 'Новая задача', wrap);
         
         renderForm(wrap, {
-            fields: fields, // 🔥 Передаем динамический массив полей
+            fields: fields,
             submitText: id ? 'Обновить' : 'Создать',
             onSubmit: async (data) => {
+                // 1. Преобразуем пустые строки в числа или null
                 data.assignee_id = data.assignee_id ? parseInt(data.assignee_id) : null;
                 data.team_id = data.team_id ? parseInt(data.team_id) : null;
-    
+                
+                // 🔥 2. ИСПРАВЛЕНИЕ: Если дедлайн не выбран, отправляем null, а не пустую строку ""
+                if (data.deadline === '') {
+                    data.deadline = null;
+                }
+
                 try {
                     if (id) await patch(`/v1/tasks/${id}`, data);
                     else await post('/v1/tasks/', data);

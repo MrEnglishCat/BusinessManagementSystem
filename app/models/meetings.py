@@ -55,7 +55,10 @@ class MeetingModel(BaseAlchemyModel):
     )
     location: Mapped[str | None] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=False
+        Integer,
+        ForeignKey(
+            "users.id",
+        ),
     )
     team_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("teams.id", ondelete="SET NULL")
@@ -80,7 +83,7 @@ class MeetingModel(BaseAlchemyModel):
         DateTime(timezone=True),
     )
     canceled_by: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL")
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
     # Relationships

@@ -54,3 +54,23 @@ class TeamRepository(BaseRepository):
         await session.commit()
 
         return True
+
+    async def delete_members(self, session: AsyncSession, team_id: int, members: list):
+
+        if not members:
+            return False
+
+        result = await session.execute(
+            select(UserModel).where(
+                UserModel.username.in_(members), UserModel.team_id == team_id
+            )
+        )
+        users_to_remove = result.scalars().all()
+
+        if not users_to_remove:
+            return False
+
+        for user in users_to_remove:
+            user.team_id = None
+
+        return True

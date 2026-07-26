@@ -58,3 +58,12 @@ class TeamService(BaseService):
             return True
 
         return None
+
+    async def delete_members(self, session: AsyncSession, team_id: int, members: list):
+        team = await self.repository.delete_members(
+            session=session, team_id=team_id, members=members
+        )
+        if team:
+            return True
+
+        return None

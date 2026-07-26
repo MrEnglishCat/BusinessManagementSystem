@@ -12,6 +12,13 @@ from ..schemas import (
 
 class UserService(BaseService):
 
+    async def get_users_without_teams(self, session: AsyncSession):
+        users = await self.repository.get_users_without_teams(session=session)
+
+        if users:
+            return [UserResponseSchema.model_validate(user) for user in users]
+        return None
+
     async def get_user_after_login(
         self,
         session: AsyncSession,

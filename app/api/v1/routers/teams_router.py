@@ -7,7 +7,12 @@ from ....config.db import get_async_session
 from ....utils.enums_service import ServiceTypeEnum, UserRole
 from ....dependencies.service import get_service_dependency
 from ....services import BaseService, InviteService
-from ....schemas import TeamBaseSchema, TeamLinkUserSchema
+from ....schemas import (
+    TeamBaseSchema,
+    TeamLinkUserSchema,
+    AddMembersPayload,
+    DeleteMembersPayload,
+)
 from ....models import UserModel
 from ....auth.config import current_active_user
 
@@ -48,7 +53,7 @@ async def get_team_by_id(
     status_code=status.HTTP_201_CREATED,
     response_model=BaseResponse,
 )
-async def post_teams(
+async def add_teams(
     team: TeamBaseSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
@@ -66,7 +71,7 @@ async def post_teams(
     team = await team_service.add(session=session, **team_dump)
 
     if team:
-        return ResponseFactory.ok(data=team)
+        return ResponseFactory.ok(message="Team is crete")
     return ResponseFactory.error()
 
 
@@ -142,3 +147,47 @@ async def get_teams_memebers(
     if team_members:
         return ResponseFactory.ok(data=team_members)
     return ResponseFactory.error(message="Team members is not found")
+
+
+@teams_router.post(
+    "/{team_id}/members",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def add_teams_memebers(
+    team_id: int,
+    members: AddMembersPayload,
+    session: AsyncSession = Depends(get_async_session),
+    team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
+):
+    team_members = await team_service.add_members(
+        session=session, team_id=team_id, members=members
+    )
+    if team_members:
+        return ResponseFactory.ok(message="Team members is add")
+    return ResponseFactory.error(message="Team members is not found")
+
+
+@teams_router.delete(
+    "/{team_id}/members",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def delete_teams_members(
+    team_id: int,
+    members: DeleteMembersPayload,
+    session: AsyncSession = Depends(get_async_session),
+    team_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.TEAM)),
+):
+    team = await team_service.get_one(session=session, **{"id": team_id})
+    if not team:
+        return ResponseFactory.error(message="Team is not found")
+
+    success = await team_service.delete_members(
+        session=session, team_id=team_id, members=members.usernames
+    )
+
+    if success:
+        return ResponseFactory.ok(message=f"Members is delete")
+
+    return ResponseFactory.error(message="Members is not found in team")

@@ -27,6 +27,7 @@ from .teams import (
     TeamResponseSchema,
     TeamLinkUserSchema,
     AddMembersPayload,
+    DeleteMembersPayload,
 )
 from .users.users import (
     UserBaseSchema,
