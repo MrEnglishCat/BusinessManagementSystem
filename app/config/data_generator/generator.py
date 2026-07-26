@@ -20,6 +20,7 @@ from app.models import (
 from app.utils.enums_service import UserRole
 
 from app.schemas.users.users import UserResponseSchema
+from app.utils.passwd import get_password_hash
 
 # Провайдеры Mimesis
 person = Person(locale=Locale.RU)
@@ -29,17 +30,17 @@ dt = Datetime()
 finance = Finance(locale=Locale.RU)
 code = Code()
 
-passwd_hasher = argon2.PasswordHasher(
-    time_cost=3,
-    memory_cost=65536,
-    hash_len=64,
-    salt_len=16,
-)
-
 
 def generate_invite_code() -> str:
     token = secrets.token_urlsafe(6).upper()[:6]
     return f"INV-{token}"
+
+
+def truncate_string(s: str, max_len: int = 250) -> str:
+    """Обрезает строку до max_len символов, добавляя '...' если она длиннее."""
+    if not s or len(s) <= max_len:
+        return s
+    return s[: max_len - 3] + "..."
 
 
 from sqlalchemy import select
@@ -64,8 +65,8 @@ async def generate_users(
         admin_user = UserModel(
             email="admin@admin.admin",
             username="admin",
-            hashed_password=passwd_hasher.hash("admin"),
-            full_name="Системный Администратор",
+            hashed_password=get_password_hash("admin"),
+            full_name=truncate_string("Системный Администратор"),
             role=UserRole.ADMIN,
             is_active=True,
             is_superuser=True,
@@ -89,10 +90,10 @@ async def generate_users(
 
         role = random.choice([UserRole.USER, UserRole.MANAGER, UserRole.ADMIN])
         user = UserModel(
-            email=email,
-            username=username,
-            hashed_password=passwd_hasher.hash(person.password(length=12)),
-            full_name=person.full_name(),
+            email=truncate_string(email),
+            username=truncate_string(username),
+            hashed_password=get_password_hash(person.password(length=12)),
+            full_name=truncate_string(person.full_name()),
             role=role,
             is_active=random.choice([True, True, True, False]),
             team_id=None,
@@ -126,8 +127,8 @@ async def generate_teams(
 
         creator = random.choice(users)
         team = TeamModel(
-            name=name,
-            description=text.text(quantity=3),
+            name=truncate_string(name),
+            description=truncate_string(text.text(quantity=3)),
             invite_code=generate_invite_code(),
             created_by=creator.id,
         )
@@ -164,8 +165,8 @@ async def generate_tasks(
             deadline = datetime.now(UTC) + timedelta(days=random.randint(-30, 60))
 
         task = TaskModel(
-            title=text.sentence(),
-            description=text.text(quantity=3),
+            title=truncate_string(text.sentence()),
+            description=truncate_string(text.text(quantity=3)),
             status=random.choice(statuses),
             deadline=deadline,
             created_by=creator.id,
@@ -193,7 +194,7 @@ async def generate_comments(
         for _ in range(num):
             user = random.choice(users)
             comment = TaskCommentModel(
-                content=text.text(quantity=3),
+                content=truncate_string(text.text(quantity=3)),
                 task_id=task.id,
                 user_id=user.id,
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(0, 30)),
@@ -216,11 +217,13 @@ async def generate_meetings(
         end = start + timedelta(hours=random.randint(1, 4))
 
         meeting = MeetingModel(
-            title=text.sentence()[:255],
-            description=text.text(quantity=3),
+            title=truncate_string(text.sentence()[:255]),
+            description=truncate_string(text.text(quantity=3)),
             start_time=start,
             end_time=end,
-            location=address.address() if random.random() < 0.5 else None,
+            location=(
+                truncate_string(address.address()) if random.random() < 0.5 else None
+            ),
             created_by=creator.id,
             team_id=team.id if team else None,
         )
@@ -268,7 +271,7 @@ async def generate_evaluations(
 
         evaluation = EvaluationModel(
             score=score,
-            comment=random.choice(fake_comments),
+            comment=truncate_string(random.choice(fake_comments)),
             employee_id=employee.id,
             reviewer_id=reviewer.id,
             task_id=random_task.id,

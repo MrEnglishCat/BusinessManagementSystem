@@ -32,6 +32,15 @@ git clone https://github.com/MrEnglishCat/BusinessManagementSystem.git
 # Переход в директорию проекта
 cd ./BusinessManagementSystem
 
+# создание .venv
+python -m venv .venv
+
+# активация .venv Windows
+.venv\Scripts\activate.bat
+
+# активация .venv Linux
+source .venv/bin/activate
+
 # Установка зависимостей
 python -m pip install -r requirements.txt
 ```
@@ -70,7 +79,7 @@ python -m http.server 8080
 
 ## 👤 Учетная запись
 
-После первой генерации данных (swagger: /v1/mock_manager/data_generate) создается аккаунт суперпользователя:
+После первой генерации данных (через swagger: /v1/mock_manager/data_generate) создается аккаунт суперпользователя(генерация данных около 15-20с):
 
 | Параметр | Значение |
 |----------|----------|
