@@ -36,7 +36,7 @@ class TaskService(BaseService):
     async def update(self, session, id, **values):
         update_task = await super().update(session, id, **values)
         if update_task:
-            return TaskResponseSchema.model_validate(update_task)
+            return True
         return None
 
 

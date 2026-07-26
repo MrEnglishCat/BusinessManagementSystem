@@ -30,7 +30,7 @@ export async function renderTeams(container) {
                     {
                         key: 'id',
                         label: 'Участники',
-                        render: r => `<button class="btn-sm btn-secondary view-members" data-team-id="${r.id}">👥 Показать</button>`
+                        render: r => `<button class="btn-sm btn-secondary manage-members-btn" data-team-id="${r.id}">👥 Управление</button>`
                     }
                 ],
                 rows: teams || [],
@@ -38,8 +38,8 @@ export async function renderTeams(container) {
                 onDelete: (id) => deleteTeam(id, teams, loadTeams)
             });
             
-            list.querySelectorAll('.view-members').forEach(btn => {
-                btn.onclick = () => showTeamMembers(btn.dataset.teamId);
+            list.querySelectorAll('.manage-members-btn').forEach(btn => {
+                btn.onclick = () => manageTeamMembers(btn.dataset.teamId, loadTeams);
             });
         } catch (e) { 
             list.innerHTML = `<p class="error">Ошибка загрузки: ${e.message}</p>`; 
@@ -106,8 +106,10 @@ export async function renderTeams(container) {
             submitText: 'Вступить',
             onSubmit: async (data) => {
                 try {
-                    await post(`/v1/teams/${encodeURIComponent(data.invite_code)}`, { 
-                        username: data.username 
+                    await post(`/v1/teams/invite_user`, { 
+                        username: data.username,
+                        invite_code:data.invite_code,
+
                     });
                     
                     // 🔥 2. Закрываем модалку по прямой ссылке
@@ -127,49 +129,318 @@ export async function renderTeams(container) {
 
 
 // =====================================================================
-// 🔥 ПРОСМОТР УЧАСТНИКОВ КОМАНДЫ (в виде таблицы)
+// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ КОМАНДЫ (С ТАБАМИ, ПОИСКОМ И МАССОВЫМИ ДЕЙСТВИЯМИ)
 // =====================================================================
-async function showTeamMembers(teamId) {
+async function manageTeamMembers(teamId, reloadCallback) {
     const wrap = document.createElement('div');
-    wrap.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem 0;">Загрузка участников...</p>';
-    
-    const modalInstance = showModal(`Участники команды`, wrap);
-    
+    wrap.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem 0;">Загрузка данных...</p>';
+    const modalInstance = showModal('Управление участниками команды', wrap);
+
     try {
-        const members = await get(`/v1/teams/${teamId}/members`);
-        
-        // 1. Нейтральное сообщение, если участников нет (без слова "Ошибка")
-        if (!members || members.length === 0) {
-            wrap.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem 0;">В этой команде пока нет участников</p>';
-            return;
-        }
-        
-        // 2. Отображение в виде красивой таблицы
-        const tableHtml = `
-            <table class="members-table">
-                <thead>
-                    <tr>
-                        <th>Пользователь</th>
-                        <th>Email</th>
-                        <th>Роль</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${members.map(m => `
-                        <tr>
-                            <td><strong>${escapeHtml(m.username || m.full_name || 'Без имени')}</strong></td>
-                            <td>${escapeHtml(m.email || '—')}</td>
-                            <td><span class="badge status-${m.role || 'user'}">${m.role || 'user'}</span></td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-        wrap.innerHTML = tableHtml;
-        
+        // 🔥 1. Параллельно загружаем текущих участников команды и всех пользователей системы
+        const [currentMembers, allUsers] = await Promise.all([
+            get(`/v1/teams/${teamId}/members`).catch(() => []),
+            get('/v1/users/').catch(() => [])
+        ]);
+
+        let searchQuery = '';
+        let currentModalTab = 'current'; // Состояние вкладки: 'current' или 'add'
+
+        // 🔥 Функция ДОБАВЛЕНИЯ участников (обновленная под usernames)
+        const addMembers = async () => {
+            const addBtn = document.getElementById('add-selected-btn');
+            const checkboxes = wrap.querySelectorAll('.add-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                alert('Выберите хотя бы одного пользователя для добавления');
+                return;
+            }
+
+            addBtn.disabled = true;
+            addBtn.textContent = 'Добавление...';
+            
+            // 🔥 Собираем массив username (строк), а не ID
+            const usernamesToAdd = Array.from(checkboxes).map(cb => cb.value);
+
+            try {
+                // 🔥 Отправляем на новый эндпоинт с правильным payload
+                const response = await post(`/v1/teams/${teamId}/members`, { 
+                    usernames: usernamesToAdd 
+                });
+                
+                showNotification(response?.message || `Добавлено участников: ${usernamesToAdd.length}`, 'success');
+                
+                // Обновляем локальный список участников
+                const newMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
+                currentMembers.length = 0;
+                currentMembers.push(...newMembers);
+                
+                searchQuery = '';
+                currentModalTab = 'current'; // Переключаемся на вкладку "Текущие"
+                renderContent();
+                if (typeof reloadCallback === 'function') await reloadCallback();
+                
+            } catch (e) {
+                alert(`Ошибка добавления: ${e.message}`);
+            } finally {
+                const newAddBtn = document.getElementById('add-selected-btn');
+                if (newAddBtn) {
+                    newAddBtn.disabled = false;
+                    newAddBtn.textContent = 'Добавить выбранных';
+                }
+            }
+        };
+
+        // 🔥 Функция МАССОВОГО УДАЛЕНИЯ (через usernames)
+        const removeMembers = async () => {
+            const removeBtn = document.getElementById('remove-selected-btn');
+            const checkboxes = wrap.querySelectorAll('.remove-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                alert('Выберите хотя бы одного участника для удаления');
+                return;
+            }
+
+            // 🔥 value у remove-checkbox тоже должен быть username (см. ниже)
+            const usernamesToRemove = Array.from(checkboxes).map(cb => cb.value);
+            const confirmed = confirm(`Удалить ${usernamesToRemove.length} участник(ов) из команды?`);
+            if (!confirmed) return;
+
+            removeBtn.disabled = true;
+            removeBtn.textContent = 'Удаление...';
+
+            try {
+                await post(`/v1/teams/${teamId}/remove_members`, { usernames: usernamesToRemove });
+                showNotification(`Удалено участников: ${usernamesToRemove.length}`, 'success');
+                
+                const updatedMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
+                currentMembers.length = 0;
+                currentMembers.push(...updatedMembers);
+                
+                renderContent();
+                if (typeof reloadCallback === 'function') await reloadCallback();
+            } catch (e) {
+                alert(`Ошибка удаления: ${e.message}`);
+            } finally {
+                const newRemoveBtn = document.getElementById('remove-selected-btn');
+                if (newRemoveBtn) {
+                    newRemoveBtn.disabled = false;
+                    newRemoveBtn.textContent = 'Удалить выбранных';
+                }
+            }
+        };
+
+        // 🔥 Функция единичного УДАЛЕНИЯ
+        const removeSingleMember = async (username) => {
+            const confirmed = confirm(`Удалить пользователя "${username}" из команды?`);
+            if (!confirmed) return;
+
+            const removeBtn = wrap.querySelector(`.remove-single-btn[data-username="${CSS.escape(username)}"]`);
+            if (removeBtn) {
+                removeBtn.disabled = true;
+                removeBtn.textContent = '...';
+            }
+
+            try {
+                // 🔥 Единичное удаление через тот же эндпоинт, но с одним username
+                await post(`/v1/teams/${teamId}/remove_members`, { usernames: [username] });
+                showNotification(`Пользователь "${username}" удален из команды`, 'success');
+                
+                const updatedMembers = await get(`/v1/teams/${teamId}/members`).catch(() => []);
+                currentMembers.length = 0;
+                currentMembers.push(...updatedMembers);
+                
+                renderContent();
+                if (typeof reloadCallback === 'function') await reloadCallback();
+            } catch (e) {
+                alert(`Ошибка удаления: ${e.message}`);
+                if (removeBtn) {
+                    removeBtn.disabled = false;
+                    removeBtn.textContent = 'Удалить';
+                }
+            }
+        };
+
+        // 🔥 5. Вспомогательные функции
+        const filterUsers = (users, query) => {
+            if (!query.trim()) return users;
+            const lowerQuery = query.toLowerCase();
+            return users.filter(u => 
+                u.username.toLowerCase().includes(lowerQuery) ||
+                (u.full_name && u.full_name.toLowerCase().includes(lowerQuery)) ||
+                (u.email && u.email.toLowerCase().includes(lowerQuery))
+            );
+        };
+
+        const highlightText = (text, query) => {
+            if (!query.trim()) return escapeHtml(text);
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            return escapeHtml(text).replace(regex, '<mark>$1</mark>');
+        };
+
+        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // 🔥 6. Функция отрисовки (с табами)
+        const renderContent = () => {
+            const existingUserIds = new Set(currentMembers.map(m => m.id));
+            const allAvailableUsers = (allUsers || []).filter(u => !existingUserIds.has(u.id));
+            const filteredUsers = filterUsers(allAvailableUsers, searchQuery);
+
+            // Рендерим кнопки вкладок
+            let html = `
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0;">
+                    <button class="modal-tab-btn" data-tab="current" style="flex: 1; padding: 0.6rem; border: none; background: transparent; border-bottom: 3px solid ${currentModalTab === 'current' ? '#2563eb' : 'transparent'}; color: ${currentModalTab === 'current' ? '#2563eb' : '#64748b'}; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Текущие (${currentMembers.length})
+                    </button>
+                    <button class="modal-tab-btn" data-tab="add" style="flex: 1; padding: 0.6rem; border: none; background: transparent; border-bottom: 3px solid ${currentModalTab === 'add' ? '#2563eb' : 'transparent'}; color: ${currentModalTab === 'add' ? '#2563eb' : '#64748b'}; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Добавить
+                    </button>
+                </div>
+            `;
+
+            // Содержимое вкладки "Текущие"
+            if (currentModalTab === 'current') {
+                html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Список участников</h4>`;
+                
+                if (currentMembers.length === 0) {
+                    html += `<p class="empty-state-small">Пока никого нет</p>`;
+                } else {
+                    html += `<div class="participants-list">`;
+                    currentMembers.forEach(m => {
+                        const displayName = m.full_name ? `${m.username} (${m.full_name})` : m.username;
+                        html += `
+                            <label class="checkbox-item remove-item">
+                                <input type="checkbox" class="remove-checkbox" value="${escapeHtml(m.username)}">
+                                <span>
+                                    👤 ${escapeHtml(displayName)} 
+                                    <small style="color: #64748b;">(${m.role || 'user'})</small>
+                                </span>
+                                <button class="btn-sm btn-danger remove-single-btn" data-username="${escapeHtml(m.username)}">Удалить</button>
+                            </label>
+                        `;
+                    });
+                    html += `</div>
+                        <button id="remove-selected-btn" class="btn-danger btn-block" style="margin-top: 0.75rem;">
+                            Удалить выбранных
+                        </button>
+                    `;
+                }
+            } 
+            // Содержимое вкладки "Добавить"
+            else {
+                html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Добавить участников</h4>`;
+
+                if (allAvailableUsers.length === 0) {
+                    html += `<p class="empty-state-small">Все пользователи системы уже в команде</p>`;
+                } else {
+                    html += `
+                        <div class="search-container" style="margin-bottom: 0.75rem;">
+                            <input 
+                                type="text" 
+                                id="user-search" 
+                                class="search-input" 
+                                placeholder="🔍 Поиск по имени, username или email..."
+                                value="${escapeHtml(searchQuery)}"
+                            >
+                            <span class="search-count">${filteredUsers.length} из ${allAvailableUsers.length}</span>
+                        </div>
+                    `;
+
+                    if (filteredUsers.length === 0) {
+                        html += `<p class="empty-state-small">Ничего не найдено</p>`;
+                    } else {
+                        html += `<div class="available-users-list">`;
+                        filteredUsers.forEach(u => {
+                            const displayName = u.full_name ? `${u.username} (${u.full_name})` : u.username;
+                            html += `
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="add-checkbox" value="${escapeHtml(u.username)}">
+                                    <span>
+                                        👤 ${highlightText(displayName, searchQuery)} 
+                                        <small style="color: #64748b;">(${highlightText(u.email || 'Без email', searchQuery)})</small>
+                                    </span>
+                                </label>
+                            `;
+                        });
+                        html += `</div>
+                            <button id="add-selected-btn" class="btn-primary btn-block" style="margin-top: 1rem;">
+                                Добавить выбранных
+                            </button>
+                        `;
+                    }
+                }
+            }
+
+            wrap.innerHTML = html;
+
+            // 🔥 7. Обработчики переключения вкладок
+            wrap.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    currentModalTab = btn.dataset.tab;
+                    renderContent();
+                };
+            });
+
+            // 🔥 8. Логика блокировки единичных кнопок удаления
+            if (currentModalTab === 'current') {
+                const updateSingleDeleteButtons = () => {
+                    const checkedCount = wrap.querySelectorAll('.remove-checkbox:checked').length;
+                    const isMultipleSelected = checkedCount > 0;
+
+                    wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
+                        btn.disabled = isMultipleSelected;
+                        btn.style.opacity = isMultipleSelected ? '0.5' : '1';
+                        btn.style.cursor = isMultipleSelected ? 'not-allowed' : 'pointer';
+                        btn.title = isMultipleSelected ? "Сначала снимите выделение" : "Удалить этого участника";
+                    });
+                };
+
+                wrap.querySelectorAll('.remove-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSingleDeleteButtons);
+                });
+                updateSingleDeleteButtons();
+            }
+
+            // 🔥 9. Обработчик поиска
+            if (currentModalTab === 'add') {
+                const searchInput = document.getElementById('user-search');
+                if (searchInput) {
+                    let debounceTimer;
+                    searchInput.addEventListener('input', (e) => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            searchQuery = e.target.value;
+                            renderContent();
+                            const newSearchInput = document.getElementById('user-search');
+                            if (newSearchInput) {
+                                newSearchInput.focus();
+                                newSearchInput.setSelectionRange(newSearchInput.value.length, newSearchInput.value.length);
+                            }
+                        }, 300);
+                    });
+                }
+            }
+
+            // 🔥 10. Обработчики кнопок действий
+            const addBtn = document.getElementById('add-selected-btn');
+            if (addBtn) addBtn.onclick = addMembers;
+
+            const removeBtn = document.getElementById('remove-selected-btn');
+            if (removeBtn) removeBtn.onclick = removeMembers;
+
+            wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.preventDefault();
+                    await removeSingleMember(parseInt(btn.dataset.userId));
+                };
+            });
+        };
+
+        // Первичная отрисовка
+        renderContent();
+
     } catch (e) {
-        // 3. Мягкое сообщение при реальной ошибке сети/сервера
-        wrap.innerHTML = `<p style="text-align: center; color: #dc2626; padding: 2rem 0;">Не удалось загрузить список участников:<br>${e.message}</p>`;
+        wrap.innerHTML = `<p style="text-align: center; color: #dc2626; padding: 2rem 0;">Не удалось загрузить данные:<br>${e.message}</p>`;
     }
 }
 

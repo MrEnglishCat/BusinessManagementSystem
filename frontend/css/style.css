@@ -1209,3 +1209,93 @@ mark {
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ВКЛАДКИ ВНУТРИ МОДАЛКИ УЧАСТНИКОВ                   */
+/* ═══════════════════════════════════════════════════ */
+
+.modal-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.modal-tab-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.modal-tab-btn:hover {
+    color: #334155;
+    background: #f8fafc;
+}
+
+.modal-tab-btn.active {
+    color: #2563eb;
+    border-bottom: 2px solid #2563eb;
+    background: white;
+}
+
+.modal-tab-content {
+    /* Плавное появление контента при переключении */
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Скроллбар для списков внутри модалки */
+.participants-list, .available-users-list {
+    padding-right: 0.5rem;
+}
+
+.participants-list::-webkit-scrollbar, 
+.available-users-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.participants-list::-webkit-scrollbar-thumb, 
+.available-users-list::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+}
+
+
+/* ═══════════════════════════════════════════════════ */
+/* ВКЛАДКИ ВНУТРИ МОДАЛКИ (Универсальные)              */
+/* ═══════════════════════════════════════════════════ */
+.modal-tab-btn:hover {
+    color: #334155 !important;
+    background: #f8fafc !important;
+}
+
+.participants-list, .available-users-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.participants-list::-webkit-scrollbar, 
+.available-users-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.participants-list::-webkit-scrollbar-thumb, 
+.available-users-list::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+}
