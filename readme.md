@@ -1,7 +1,7 @@
 
 # 🏢 Business Management System
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.14+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
