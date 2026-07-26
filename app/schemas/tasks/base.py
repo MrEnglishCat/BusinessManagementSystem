@@ -17,19 +17,17 @@ class TaskIDSchema(BaseModel):
 class TaskBaseSchema(BasePydanticModel):
     title: str = Field(title="Title")
     description: str = Field(title="Description")
-    deadline: datetime = Field(
+    deadline: datetime | None = Field(
         title="Deadline", json_schema_extra={"example": "2026-05-29 23:23"}
     )
-    # team_id: int | None = Field(default=None, title="Team")
     team: TeamResponseSchema | None = Field(default=None, title="Team")
-    # assignee_id: int | None = Field(default=None, title="Assignee")
     assignee: UserResponseSchema | None = Field(default=None, title="Assignee")
 
 
 class TaskCreateSchema(BasePydanticModel):
     title: str = Field(title="Title")
     description: str = Field(title="Description")
-    deadline: datetime = Field(
+    deadline: datetime | None = Field(
         title="Deadline", json_schema_extra={"example": "2026-05-29 23:23"}
     )
     team_id: int | None = Field(default=None, title="Team")
@@ -40,7 +38,7 @@ class TaskUpdateSchema(BasePydanticModel):
     title: str = Field(title="Title")
     description: str = Field(title="Description")
     status: TaskStatus = Field(title="Status")
-    deadline: datetime = Field(
+    deadline: datetime | None = Field(
         title="Deadline", json_schema_extra={"example": "2026-05-29 23:23"}
     )
     team_id: int | None = Field(default=None, title="Team")

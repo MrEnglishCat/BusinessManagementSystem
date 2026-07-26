@@ -57,7 +57,8 @@ class UserResponseSchema(
     BaseDataTimePydanticModel,
     UserBaseSchema,
     UserIDSchema,
-): ...
+):
+    is_superuser: bool
 
 
 class UserResponseAllUsersSchema(

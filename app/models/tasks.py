@@ -28,7 +28,7 @@ class TaskModel(BaseAlchemyModel):
     status: Mapped[TaskStatus] = mapped_column(
         DB_Enum(TaskStatus), default=TaskStatus.CREATE
     )
-    deadline: Mapped[DateTime] = mapped_column(
+    deadline: Mapped[DateTime | None] = mapped_column(
         DateTime(timezone=True),
     )
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))

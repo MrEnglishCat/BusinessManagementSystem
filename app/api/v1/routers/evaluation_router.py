@@ -83,7 +83,7 @@ async def create_evaluations(
     current_user: UserModel = Depends(current_active_user),
 ):
 
-    if current_user.role != UserRole.MANAGER:
+    if current_user.role in (UserRole.MANAGER, UserModel.ADMIN):
         return ResponseFactory.error(
             message="Only users with the manager role can rate"
         )

@@ -28,6 +28,6 @@ class UserRole(StrEnum):
 
 class TaskStatus(StrEnum):
     OPEN = "open"
-    IN_PROGRES = "in_progres"
+    IN_PROGRES = "in_progress"
     COMPLETED = "completed"
     CREATE = "create"

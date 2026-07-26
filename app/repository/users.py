@@ -32,3 +32,7 @@ class UserRepository(BaseRepository):
         user_meetings = await session.execute(stmt)
 
         return user_meetings.scalar()
+
+    async def bulk_delete(self, session: AsyncSession):
+        stmt = delete(self.model).where(self.model.is_superuser == False)
+        await session.execute(stmt)

@@ -50,8 +50,8 @@ class BaseRepository:
         result = await session.execute(stmt)
         return result.rowcount
 
-    async def delete_all(self, session):
-        stmt = delete(self.model)
+    async def delete_all(self, session, **filter_by):
+        stmt = delete(self.model).filter_by(**filter_by)
         result = await session.execute(stmt)
         return result.rowcount
 

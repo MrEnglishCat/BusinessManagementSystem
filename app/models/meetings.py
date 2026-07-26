@@ -53,7 +53,7 @@ class MeetingModel(BaseAlchemyModel):
     end_time: Mapped[DateTime | None] = mapped_column(
         DateTime(timezone=True),
     )
-    location: Mapped[str] = mapped_column(String(255))
+    location: Mapped[str | None] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=False
     )
