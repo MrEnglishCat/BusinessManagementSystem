@@ -967,3 +967,38 @@ mark {
     border-radius: 2px;
     font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════ */
+/* КОЛОНКИ ИНФОРМАЦИИ ОБ ОТМЕНЕ ВСТРЕЧ                 */
+/* ═══════════════════════════════════════════════════ */
+
+/* Tooltip для длинной причины отмены */
+.cancel-reason-tooltip {
+    color: #dc2626;
+    border-bottom: 1px dotted #dc2626;
+    cursor: help;
+    display: inline-block;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+/* Блок с информацией об отмене (дата + пользователь) */
+.canceled-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.8rem;
+}
+
+.canceled-date {
+    color: #475569;
+    font-weight: 500;
+}
+
+.canceled-user {
+    color: #64748b;
+    font-style: italic;
+}

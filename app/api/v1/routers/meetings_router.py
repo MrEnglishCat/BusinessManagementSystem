@@ -88,9 +88,7 @@ async def post_meetings(
     ),
     current_user: UserModel = Depends(current_active_user),
 ):
-    print(">" * 10)
-    print("meetings", meeting)
-    print(">" * 10)
+
     new_meeting = await meeting_service.add(
         session=session, meeting_create_schema=meeting, current_user=current_user
     )

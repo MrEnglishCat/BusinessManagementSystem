@@ -23,13 +23,19 @@ export async function renderMeetings(container) {
         try {
             const meetingsUrl = currentTab === 'canceled' ? '/v1/meetings/canceled' : '/v1/meetings/';
 
-            const [meetings, teams] = await Promise.all([
+            // 🔥 1. Параллельно загружаем встречи, команды И пользователей
+            const [meetings, teams, users] = await Promise.all([
                 get(meetingsUrl),
-                get('/v1/teams/').catch(() => [])
+                get('/v1/teams/').catch(() => []),
+                get('/v1/users/').catch(() => [])  // ← для маппинга canceled_by
             ]);
             
             const teamMap = new Map();
             (teams || []).forEach(t => teamMap.set(t.id, t.name));
+            
+            // 🔥 2. Map для быстрого доступа к имени пользователя по ID
+            const userMap = new Map();
+            (users || []).forEach(u => userMap.set(u.id, u.username));
             
             list.innerHTML = '';
             
@@ -70,6 +76,41 @@ export async function renderMeetings(container) {
                             return `<span class="badge status-${rawStatus}">${statusText}</span>`;
                         } 
                     },
+                    
+                    // 🔥 УСЛОВНО добавляем колонки только для вкладки "Отмененные"
+                    ...(currentTab === 'canceled' ? [
+                        {
+                            key: 'cancellation_reason',
+                            label: 'Причина отмены',
+                            render: r => {
+                                if (!r.cancellation_reason) return '<span style="color: #cbd5e1;">—</span>';
+                                const reason = escapeHtml(r.cancellation_reason);
+                                const shortReason = reason.length > 35 ? reason.substring(0, 35) + '...' : reason;
+                                return `<span class="cancel-reason-tooltip" title="${reason}">${shortReason}</span>`;
+                            }
+                        },
+                        {
+                            key: 'canceled_info',
+                            label: 'Отменено',
+                            render: r => {
+                                if (!r.canceled_at) return '<span style="color: #cbd5e1;">—</span>';
+                                const dateStr = new Date(r.canceled_at).toLocaleString('ru-RU', { 
+                                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                                });
+                                const userName = r.canceled_by 
+                                    ? (userMap.get(r.canceled_by) || `ID: ${r.canceled_by}`) 
+                                    : 'Удаленный пользователь';
+                                    
+                                return `
+                                    <div class="canceled-info-block">
+                                        <div class="canceled-date">📅 ${dateStr}</div>
+                                        <div class="canceled-user">👤 ${escapeHtml(userName)}</div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    ] : []),
+                    
                     {
                         key: 'participants',
                         label: 'Участники',
@@ -77,23 +118,31 @@ export async function renderMeetings(container) {
                             const count = r.participants ? r.participants.length : 0;
                             return `<button class="btn-sm btn-secondary manage-participants-btn" data-id="${r.id}">👥 ${count}</button>`;
                         }
-                    }
-                    // 🔥 Мы убрали отсюда кастомную колонку 'Действия', чтобы ui.js создал её стандартно
+                    },
+                    // {
+                    //     key: 'id',
+                    //     label: 'Действия',
+                    //     render: r => {
+                    //         const rawStatus = r.status ? String(r.status).trim().toLowerCase() : '';
+                    //         if (rawStatus === 'planned' || rawStatus === 'in_progress') {
+                    //             return `<button class="btn-sm btn-warning cancel-btn" data-id="${r.id}">Отменить</button>`;
+                    //         }
+                    //         return '<span style="color: #94a3b8; font-size: 0.85rem;">—</span>';
+                    //     }
+                    // }
                 ],
                 rows: meetings,
-                onView: null,
                 onEdit: (id) => openMeetingForm(id),
                 onDelete: (id) => deleteMeeting(id, meetings, loadMeetings)
             });
             
-            // 🔥 ДОБАВЛЯЕМ КНОПКУ "ОТМЕНИТЬ" В СУЩЕСТВУЮЩУЮ ЯЧЕЙКУ .actions
+            // 🔥 Добавляем кнопку "Отменить" в ячейку .actions
             list.querySelectorAll('tbody tr').forEach(tr => {
                 const id = tr.dataset.id;
                 const meeting = meetings.find(m => String(m.id) === String(id));
                 if (!meeting) return;
 
                 const rawStatus = meeting.status ? String(meeting.status).trim().toLowerCase() : '';
-                // Показываем кнопку только для запланированных или идущих встреч
                 if (rawStatus === 'planned' || rawStatus === 'in_progress') {
                     const actionsCell = tr.querySelector('.actions');
                     if (actionsCell) {
@@ -102,30 +151,17 @@ export async function renderMeetings(container) {
                         cancelBtn.textContent = 'Отменить';
                         cancelBtn.dataset.id = id;
                         cancelBtn.title = 'Отменить встречу';
-                        actionsCell.appendChild(cancelBtn); // Добавляем в конец ячейки (после ✏️ и 🗑️)
+                        actionsCell.appendChild(cancelBtn);
                     }
                 }
             });
 
-            // Обработчик для кнопки "Отменить"
             list.querySelectorAll('.cancel-btn').forEach(btn => {
                 btn.onclick = () => openCancelForm(btn.dataset.id);
             });
             
-             // 🔥 Обработчики для кнопок "Участники"
             list.querySelectorAll('.manage-participants-btn').forEach(btn => {
-                btn.onclick = () => manageParticipants(btn.dataset.id, loadMeetings); 
-            });
-            
-            
-            // Обработчики для кнопок "Отменить"
-            list.querySelectorAll('.cancel-btn').forEach(btn => {
-                btn.onclick = () => openCancelForm(btn.dataset.id);
-            });
-
-            // 🔥 Обработчики для кнопок "Участники"
-            list.querySelectorAll('.manage-participants-btn').forEach(btn => {
-                btn.onclick = () => manageParticipants(btn.dataset.id);
+                btn.onclick = () => manageParticipants(btn.dataset.id, loadMeetings);
             });
 
         } catch (e) { 
