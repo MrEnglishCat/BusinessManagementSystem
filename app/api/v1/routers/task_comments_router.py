@@ -55,7 +55,7 @@ async def get_task_comment_by_id(
     status_code=status.HTTP_201_CREATED,
     response_model=BaseResponse,
 )
-async def post_task_comments(
+async def create_task_comments(
     task_comment: TaskCommentCreateSchema = Body(),
     session: AsyncSession = Depends(get_async_session),
     task_comment_service: BaseService = Depends(
@@ -67,12 +67,11 @@ async def post_task_comments(
         return ResponseFactory.error("User is not found")
 
     task_comment_dump = task_comment.model_dump()
-    print(f"{current_user=}")
     task_comment_dump["user_id"] = current_user.id
     new_task_comment = await task_comment_service.add(
         session=session, **task_comment_dump
     )
-    return ResponseFactory.ok(data=new_task_comment)
+    return ResponseFactory.ok(message="Comment is create")
 
 
 @task_comments_router.delete(

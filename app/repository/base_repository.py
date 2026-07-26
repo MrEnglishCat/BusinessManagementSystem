@@ -16,9 +16,9 @@ class BaseRepository:
         ]
 
     async def insert(self, session: AsyncSession, **values):
-        stmt = insert(self.model).values(**values).returning(self.model)
+        stmt = insert(self.model).values(**values).returning(self.model.id)
         insert_result = await session.execute(stmt)
-        return insert_result.scalar_one_or_none()
+        return insert_result.scalar()
 
     async def select_in(self, session: AsyncSession, users: list):
         stmt = select(self.model).where(self.model.username.in_(users))
@@ -33,7 +33,7 @@ class BaseRepository:
     async def select_one(self, session: AsyncSession, **filter_by):
         stmt = select(self.model).filter_by(**filter_by)
         search_result = await session.execute(stmt)
-        return search_result.scalar()
+        return search_result.scalar_one_or_none()
 
     async def update(self, session: AsyncSession, id: int, **values):
         stmt = (

@@ -24,3 +24,10 @@ class UserRole(StrEnum):
     USER = "user"
     MANAGER = "manager"
     ADMIN = "admin"
+
+
+class TaskStatus(StrEnum):
+    OPEN = "open"
+    IN_PROGRES = "in_progres"
+    COMPLETED = "completed"
+    CREATE = "create"

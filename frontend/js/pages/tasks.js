@@ -62,40 +62,96 @@ export async function renderTasks(container) {
     async function openTaskForm(id = null) {
         const wrap = document.createElement('div');
         let task = {};
+        let teams = [];
         
-        if (id) {
+        // 🔥 1. Параллельная загрузка задачи и списка команд
+        try {
+            const results = await Promise.all([
+                id ? get(`/v1/tasks/${id}`) : Promise.resolve({}),
+                get('/v1/teams/').catch(() => [])
+            ]);
+            task = results[0];
+            teams = results[1] || [];
+        } catch (e) {
+            alert(`Не удалось загрузить данные: ${e.message}`);
+            return;
+        }
+        
+        const teamOptions = [
+            { value: '', label: '— Без команды —' },
+            ...teams.map(t => ({ value: t.id, label: t.name }))
+        ];
+        
+        // 🔥 2. Если у задачи уже есть команда — сразу загружаем её участников
+        let initialUserOptions = [{ value: '', label: '— Без исполнителя —' }];
+        
+        if (task.team_id) {
             try {
-                task = await get(`/v1/tasks/${id}`);
+                const members = await get(`/v1/teams/${task.team_id}/members`);
+                if (members && members.length > 0) {
+                    initialUserOptions = [
+                        { value: '', label: '— Без исполнителя —' },
+                        ...members.map(m => ({
+                            value: m.id,
+                            label: `${m.username}${m.full_name ? ` (${m.full_name})` : ''}`
+                        }))
+                    ];
+                }
             } catch (e) {
-                alert(`Не удалось загрузить данные задачи: ${e.message}`);
-                return;
+                console.error('Не удалось загрузить участников команды:', e);
+                initialUserOptions = [
+                    { value: '', label: '— Не найдены исполнители —' }
+                ];
             }
+        }
+        
+        // 🔥 3. Формируем базовые поля (общие для создания и редактирования)
+        const fields = [
+            { key: 'title', label: 'Название', required: true, value: task.title || '' },
+            { key: 'description', label: 'Описание', value: task.description || '' },
+            { key: 'deadline', label: 'Дедлайн', type: 'datetime-local', value: task.deadline ? task.deadline.slice(0, 16) : '' },
+            { 
+                key: 'assignee_id', 
+                label: 'Исполнитель', 
+                type: 'select', 
+                options: initialUserOptions,
+                value: task.assignee_id || ''
+            },
+            { 
+                key: 'team_id', 
+                label: 'Команда', 
+                type: 'select', 
+                options: teamOptions,
+                value: task.team_id || ''
+            }
+        ];
+    
+        // 🔥 4. ДОБАВЛЯЕМ поле статуса ТОЛЬКО при редактировании (если есть id)
+        if (id) {
+            fields.push({
+                key: 'status',
+                label: 'Статус',
+                type: 'select',
+                options: [
+                    { value: 'create', label: 'Created (Создана)' },
+                    { value: 'open', label: 'Open (Открыта)' }, 
+                    { value: 'in_progres', label: 'In Progress (В работе)' }, 
+                    { value: 'completed', label: 'Completed (Завершена)' },
+                    { value: 'canceled', label: 'Canceled (Отменена)' }
+                ],
+                value: task.status || 'created'
+            });
         }
         
         const modalInstance = showModal(id ? 'Редактировать задачу' : 'Новая задача', wrap);
         
         renderForm(wrap, {
-            fields: [
-                { key: 'title', label: 'Название', required: true, value: task.title || '' },
-                { key: 'description', label: 'Описание', value: task.description || '' },
-                { key: 'status', label: 'Статус', type: 'select', options: [
-                    { value: 'created', label: 'Created (Создана)' },
-                    { value: 'open', label: 'Open (Открыта)' }, 
-                    { value: 'in_progres', label: 'In Progress (В работе)' }, 
-                    { value: 'completed', label: 'Completed (Завершена)' }
-                ], value: task.status || 'created' },
-                { key: 'deadline', label: 'Дедлайн', type: 'datetime-local', value: task.deadline ? task.deadline.slice(0, 16) : '' },
-                { key: 'assignee_id', label: 'ID Исполнителя', type: 'number', value: task.assignee_id || '' },
-                { key: 'team_id', label: 'ID Команды', type: 'number', value: task.team_id || '' }
-            ],
+            fields: fields, // 🔥 Передаем динамический массив полей
             submitText: id ? 'Обновить' : 'Создать',
             onSubmit: async (data) => {
-                if (data.assignee_id === '') data.assignee_id = null;
-                else data.assignee_id = parseInt(data.assignee_id);
-                
-                if (data.team_id === '') data.team_id = null;
-                else data.team_id = parseInt(data.team_id);
-
+                data.assignee_id = data.assignee_id ? parseInt(data.assignee_id) : null;
+                data.team_id = data.team_id ? parseInt(data.team_id) : null;
+    
                 try {
                     if (id) await patch(`/v1/tasks/${id}`, data);
                     else await post('/v1/tasks/', data);
@@ -108,6 +164,54 @@ export async function renderTasks(container) {
                 }
             }
         });
+        
+        // 🔥 5. КАСКАДНАЯ ЛОГИКА: при смене команды обновляем список исполнителей
+        const teamSelect = wrap.querySelector('select[name="team_id"]');
+        const assigneeSelect = wrap.querySelector('select[name="assignee_id"]');
+        
+        // Начальное состояние: если команды нет — блокируем select исполнителя
+        if (assigneeSelect && !task.team_id) {
+            assigneeSelect.innerHTML = '<option value="">— Сначала выберите команду —</option>';
+            assigneeSelect.disabled = true;
+        }
+        
+        if (teamSelect && assigneeSelect) {
+            teamSelect.addEventListener('change', async (e) => {
+                const newTeamId = e.target.value;
+                
+                assigneeSelect.innerHTML = '<option value="">Загрузка...</option>';
+                assigneeSelect.disabled = true;
+                
+                if (!newTeamId) {
+                    assigneeSelect.innerHTML = '<option value="">— Сначала выберите команду —</option>';
+                    assigneeSelect.disabled = true;
+                    return;
+                }
+                
+                try {
+                    const members = await get(`/v1/teams/${newTeamId}/members`);
+                    
+                    if (!members || members.length === 0) {
+                        assigneeSelect.innerHTML = '<option value="">— В команде нет участников —</option>';
+                        assigneeSelect.disabled = true;
+                    } else {
+                        assigneeSelect.innerHTML = `
+                            <option value="">— Без исполнителя —</option>
+                            ${members.map(m => `
+                                <option value="${m.id}">
+                                    ${escapeHtml(m.username)}${m.full_name ? ` (${escapeHtml(m.full_name)})` : ''}
+                                </option>
+                            `).join('')}
+                        `;
+                        assigneeSelect.disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Ошибка загрузки участников:', err);
+                    assigneeSelect.innerHTML = '<option value="">— Не найдены исполнители —</option>';
+                    assigneeSelect.disabled = true;
+                }
+            });
+        }
     }
 
     await loadTasks();
