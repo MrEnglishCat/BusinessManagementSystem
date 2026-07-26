@@ -23,6 +23,8 @@
 
 ##  Быстрый старт
 
+
+
 ### 1. Установка
 
 ```bash
@@ -32,6 +34,11 @@ git clone https://github.com/MrEnglishCat/BusinessManagementSystem.git
 # Переход в директорию проекта
 cd ./BusinessManagementSystem
 
+# Docker
+docker compose up --build
+
+
+# Последующие команды запуска, для запуска без докера.
 # создание .venv
 python -m venv .venv
 

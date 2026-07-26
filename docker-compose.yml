@@ -31,11 +31,11 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bms_user}:${POSTGRES_PASSWORD:-bms_password}@postgres:5432/${POSTGRES_DB:-business_management}
       DATABASE_URL_SYNC: postgresql://${POSTGRES_USER:-bms_user}:${POSTGRES_PASSWORD:-bms_password}@postgres:5432/${POSTGRES_DB:-business_management}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-bms_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bms_password}
-      POSTGRES_DB: ${POSTGRES_DB:-business_management}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-bms_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-bms_password}
+      BMS_DB_NAME: ${POSTGRES_DB:-business_management}
       SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
       CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
     ports:
