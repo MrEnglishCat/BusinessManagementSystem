@@ -25,7 +25,6 @@ class TaskService(BaseService):
         **filter_by,
     ):
         task = await self.repository.select_one(session=session, **filter_by)
-        print(task)
         if task:
             return TaskResponseSchema.model_validate(task)
         return None
