@@ -16,16 +16,16 @@ class EvaluationModel(BaseAlchemyModel):
     comment: Mapped[str] = mapped_column(Text)
     employee_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     reviewer_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     task_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("tasks.id"), nullable=False
+        Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
     )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

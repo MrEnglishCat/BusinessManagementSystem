@@ -20,6 +20,7 @@ from app.models import (
 from app.utils.enums_service import UserRole
 
 from app.schemas.users.users import UserResponseSchema
+from app.utils.passwd import get_password_hash
 
 # Провайдеры Mimesis
 person = Person(locale=Locale.RU)
@@ -29,17 +30,20 @@ dt = Datetime()
 finance = Finance(locale=Locale.RU)
 code = Code()
 
-passwd_hasher = argon2.PasswordHasher(
-    time_cost=3,
-    memory_cost=65536,
-    hash_len=64,
-    salt_len=16,
-)
-
 
 def generate_invite_code() -> str:
     token = secrets.token_urlsafe(6).upper()[:6]
     return f"INV-{token}"
+
+
+def truncate_string(s: str, max_len: int = 250) -> str:
+    """Обрезает строку до max_len символов, добавляя '...' если она длиннее."""
+    if not s or len(s) <= max_len:
+        return s
+    return s[: max_len - 3] + "..."
+
+
+from sqlalchemy import select
 
 
 async def generate_users(
@@ -48,6 +52,30 @@ async def generate_users(
     users = []
     used_emails = set()
     used_usernames = set()
+
+    admin_user = None
+    result = await session.execute(
+        select(UserModel).where(UserModel.username == "admin")
+    )
+    existing_admin = result.scalar_one_or_none()
+
+    if existing_admin:
+        admin_user = existing_admin
+    else:
+        admin_user = UserModel(
+            email="admin@admin.admin",
+            username="admin",
+            hashed_password=get_password_hash("admin"),
+            full_name=truncate_string("Системный Администратор"),
+            role=UserRole.ADMIN,
+            is_active=True,
+            is_superuser=True,
+            team_id=None,
+        )
+        users.append(admin_user)
+
+    used_emails.add("admin@admin.admin")
+    used_usernames.add("admin")
 
     for _ in range(count):
         email = person.email()
@@ -62,19 +90,26 @@ async def generate_users(
 
         role = random.choice([UserRole.USER, UserRole.MANAGER, UserRole.ADMIN])
         user = UserModel(
-            email=email,
-            username=username,
-            password=passwd_hasher.hash(person.password(length=12)),
-            full_name=person.full_name(),
+            email=truncate_string(email),
+            username=truncate_string(username),
+            hashed_password=get_password_hash(person.password(length=12)),
+            full_name=truncate_string(person.full_name()),
             role=role,
             is_active=random.choice([True, True, True, False]),
             team_id=None,
         )
         users.append(user)
 
-    session.add_all(users)
-    await session.commit()
-    await session.flush()
+    if users:
+        session.add_all(users)
+        await session.commit()
+        await session.flush()
+
+    if existing_admin:
+        all_users_result = await session.execute(select(UserModel))
+        all_users = all_users_result.scalars().all()
+        return [UserResponseSchema.model_validate(user) for user in all_users]
+
     return [UserResponseSchema.model_validate(user) for user in users]
 
 
@@ -92,8 +127,8 @@ async def generate_teams(
 
         creator = random.choice(users)
         team = TeamModel(
-            name=name,
-            description=text.text(quantity=3),
+            name=truncate_string(name),
+            description=truncate_string(text.text(quantity=3)),
             invite_code=generate_invite_code(),
             created_by=creator.id,
         )
@@ -103,10 +138,14 @@ async def generate_teams(
     await session.flush()
 
     for user in users:
+        if user.is_superuser:
+            continue
+
         if random.random() < 0.6:
             team = random.choice(teams)
             user.team_id = team.id
 
+    await session.flush()
     return teams
 
 
@@ -118,16 +157,16 @@ async def generate_tasks(
 
     for _ in range(count):
         creator = random.choice(users)
+
         assignee = random.choice(users) if random.random() < 0.8 else None
         team = random.choice(teams) if random.random() < 0.5 else None
-
         deadline = None
         if random.random() < 0.7:
             deadline = datetime.now(UTC) + timedelta(days=random.randint(-30, 60))
 
         task = TaskModel(
-            title=text.sentence(),
-            description=text.text(quantity=3),
+            title=truncate_string(text.sentence()),
+            description=truncate_string(text.text(quantity=3)),
             status=random.choice(statuses),
             deadline=deadline,
             created_by=creator.id,
@@ -142,18 +181,20 @@ async def generate_tasks(
 
 
 async def generate_comments(
-    session: AsyncSession, tasks: list[TaskModel], users: list[UserModel]
+    session: AsyncSession,
+    tasks: list[TaskModel],
+    users: list[UserModel],
+    min_comments: int = settings.GENERATE_COMMENTS_PER_TASK_MIN,
+    max_comments: int = settings.GENERATE_COMMENTS_PER_TASK_MAX,
 ):
     comments = []
     for task in tasks:
-        num = random.randint(
-            settings.GENERATE_COMMENTS_PER_TASK_MIN,
-            settings.GENERATE_COMMENTS_PER_TASK_MAX,
-        )
+        num = random.randint(min_comments, max_comments)
+
         for _ in range(num):
             user = random.choice(users)
             comment = TaskCommentModel(
-                content=text.text(quantity=3),
+                content=truncate_string(text.text(quantity=3)),
                 task_id=task.id,
                 user_id=user.id,
                 created_at=datetime.now(UTC) - timedelta(days=random.randint(0, 30)),
@@ -176,11 +217,13 @@ async def generate_meetings(
         end = start + timedelta(hours=random.randint(1, 4))
 
         meeting = MeetingModel(
-            title=text.sentence()[:255],
-            description=text.text(quantity=3),
+            title=truncate_string(text.sentence()[:255]),
+            description=truncate_string(text.text(quantity=3)),
             start_time=start,
             end_time=end,
-            location=address.address() if random.random() < 0.5 else None,
+            location=(
+                truncate_string(address.address()) if random.random() < 0.5 else None
+            ),
             created_by=creator.id,
             team_id=team.id if team else None,
         )
@@ -202,38 +245,88 @@ async def generate_meetings(
 
 
 async def generate_evaluations(
-    session: AsyncSession, users: list[UserModel], tasks: list[TaskModel], count: int
+    session: AsyncSession, users: list, tasks: list, count: int
 ):
-    evaluations = []
+    if not tasks:
+        return []
+
+    evaluations_to_add = []
+
+    fake_comments = [
+        "Отличная работа, код чистый и хорошо структурирован.",
+        "Задача выполнена в срок, замечаний нет.",
+        "Есть небольшие замечания по архитектуре, требуется рефакторинг.",
+        "Превосходный результат, превзошел ожидания!",
+        "Слабое понимание требований, необходимо доработать.",
+        "Хорошая работа, но не хватает unit-тестов.",
+        "Комментарий отсутствует, но работа принята.",
+    ]
+
     for _ in range(count):
+        random_task = random.choice(tasks)
+
         employee = random.choice(users)
-        available_reviewers = [u for u in users if u.id != employee.id]
-        if not available_reviewers:
-            continue
+        reviewer = random.choice(users)
+        score = random.randint(1, 5)
 
-        reviewer = random.choice(available_reviewers)
-        task = random.choice(tasks) if random.random() < 0.6 else None
-
-        ev = EvaluationModel(
-            score=random.randint(1, 5),
-            comment=text.text(quantity=3) if random.random() < 0.5 else None,
+        evaluation = EvaluationModel(
+            score=score,
+            comment=truncate_string(random.choice(fake_comments)),
             employee_id=employee.id,
             reviewer_id=reviewer.id,
-            task_id=task.id if task else None,
+            task_id=random_task.id,
         )
-        evaluations.append(ev)
+        evaluations_to_add.append(evaluation)
 
-    session.add_all(evaluations)
+    session.add_all(evaluations_to_add)
     await session.flush()
+    return evaluations_to_add
 
 
-async def run_generate(session: AsyncSession):
-    users = await generate_users(session, settings.GENERATE_USERS_COUNT)
-    teams = await generate_teams(session, users, settings.GENERATE_TEAMS_COUNT)
-    tasks = await generate_tasks(session, users, teams, settings.GENERATE_TASKS_COUNT)
-    await generate_comments(session, tasks, users)
-    await generate_meetings(session, users, teams, settings.GENERATE_MEETINGS_COUNT)
-    await generate_evaluations(
-        session, users, tasks, settings.GENERATE_EVALUATIONS_COUNT
+async def run_generate(
+    session: AsyncSession,
+    users_count: int | None = None,
+    teams_count: int | None = None,
+    tasks_count: int | None = None,
+    meetings_count: int | None = None,
+    evaluations_count: int | None = None,
+    comments_per_task_min: int | None = None,
+    comments_per_task_max: int | None = None,
+):
+    _users_count = (
+        users_count if users_count is not None else settings.GENERATE_USERS_COUNT
     )
+    _teams_count = (
+        teams_count if teams_count is not None else settings.GENERATE_TEAMS_COUNT
+    )
+    _tasks_count = (
+        tasks_count if tasks_count is not None else settings.GENERATE_TASKS_COUNT
+    )
+    _meetings_count = (
+        meetings_count
+        if meetings_count is not None
+        else settings.GENERATE_MEETINGS_COUNT
+    )
+    _evaluations_count = (
+        evaluations_count
+        if evaluations_count is not None
+        else settings.GENERATE_EVALUATIONS_COUNT
+    )
+    _comments_min = (
+        comments_per_task_min
+        if comments_per_task_min is not None
+        else settings.GENERATE_COMMENTS_PER_TASK_MIN
+    )
+    _comments_max = (
+        comments_per_task_max
+        if comments_per_task_max is not None
+        else settings.GENERATE_COMMENTS_PER_TASK_MAX
+    )
+
+    users = await generate_users(session, _users_count)
+    teams = await generate_teams(session, users, _teams_count)
+    tasks = await generate_tasks(session, users, teams, _tasks_count)
+    await generate_comments(session, tasks, users, _comments_min, _comments_max)
+    await generate_meetings(session, users, teams, _meetings_count)
+    await generate_evaluations(session, users, tasks, _evaluations_count)
     await session.commit()

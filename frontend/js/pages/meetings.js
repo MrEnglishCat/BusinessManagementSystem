@@ -119,17 +119,6 @@ export async function renderMeetings(container) {
                             return `<button class="btn-sm btn-secondary manage-participants-btn" data-id="${r.id}">👥 ${count}</button>`;
                         }
                     },
-                    // {
-                    //     key: 'id',
-                    //     label: 'Действия',
-                    //     render: r => {
-                    //         const rawStatus = r.status ? String(r.status).trim().toLowerCase() : '';
-                    //         if (rawStatus === 'planned' || rawStatus === 'in_progress') {
-                    //             return `<button class="btn-sm btn-warning cancel-btn" data-id="${r.id}">Отменить</button>`;
-                    //         }
-                    //         return '<span style="color: #94a3b8; font-size: 0.85rem;">—</span>';
-                    //     }
-                    // }
                 ],
                 rows: meetings,
                 onEdit: (id) => openMeetingForm(id),
@@ -245,7 +234,7 @@ export async function renderMeetings(container) {
 }
 
 // =====================================================================
-// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ (С БЛОКИРОВКОЙ ЕДИНИЧНОГО УДАЛЕНИЯ ПРИ МАССОВОМ)
+// 🔥 УПРАВЛЕНИЕ УЧАСТНИКАМИ (С ТАБАМИ, СОХРАНЯЯ ВСЕ ОРИГИНАЛЬНЫЕ КНОПКИ)
 // =====================================================================
 async function manageParticipants(meetingId, reloadCallback) {
     const wrap = document.createElement('div');
@@ -260,8 +249,9 @@ async function manageParticipants(meetingId, reloadCallback) {
 
         let currentParticipants = meeting.participants || [];
         let searchQuery = '';
+        let currentModalTab = 'current'; // Состояние вкладки: 'current' или 'add'
 
-        // 🔥 1. Функция ДОБАВЛЕНИЯ нескольких участников
+        // 🔥 1. Функция ДОБАВЛЕНИЯ
         const addParticipants = async () => {
             const addBtn = document.getElementById('add-selected-btn');
             const checkboxes = wrap.querySelectorAll('.add-checkbox:checked');
@@ -273,20 +263,17 @@ async function manageParticipants(meetingId, reloadCallback) {
 
             addBtn.disabled = true;
             addBtn.textContent = 'Добавление...';
-
             const usersToAdd = Array.from(checkboxes).map(cb => ({ username: cb.value }));
 
             try {
-                await post(`/v1/meetings/${meetingId}/add_participants`, {
-                    participants: usersToAdd
-                });
-                
+                await post(`/v1/meetings/${meetingId}/add_participants`, { participants: usersToAdd });
                 showNotification(`Успешно добавлено участников: ${usersToAdd.length}`, 'success');
+                
                 currentParticipants = [...currentParticipants, ...usersToAdd];
                 searchQuery = '';
+                currentModalTab = 'current'; // Переключаем на вкладку текущих после добавления
                 renderContent();
                 if (typeof reloadCallback === 'function') await reloadCallback();
-                
             } catch (e) {
                 alert(`Ошибка добавления: ${e.message}`);
             } finally {
@@ -298,7 +285,7 @@ async function manageParticipants(meetingId, reloadCallback) {
             }
         };
 
-        // 🔥 2. Функция МАССОВОГО УДАЛЕНИЯ участников
+        // 🔥 2. Функция МАССОВОГО УДАЛЕНИЯ
         const removeParticipants = async () => {
             const removeBtn = document.getElementById('remove-selected-btn');
             const checkboxes = wrap.querySelectorAll('.remove-checkbox:checked');
@@ -309,7 +296,7 @@ async function manageParticipants(meetingId, reloadCallback) {
             }
 
             const usersToRemove = Array.from(checkboxes).map(cb => cb.value);
-            const confirmed = confirm(`Вы уверены, что хотите удалить ${usersToRemove.length} участник(ов) из этой встречи?`);
+            const confirmed = confirm(`Вы уверены, что хотите удалить ${usersToRemove.length} участник(ов)?`);
             if (!confirmed) return;
 
             removeBtn.disabled = true;
@@ -324,7 +311,6 @@ async function manageParticipants(meetingId, reloadCallback) {
                 currentParticipants = currentParticipants.filter(p => !usersToRemove.includes(p.username));
                 renderContent();
                 if (typeof reloadCallback === 'function') await reloadCallback();
-                
             } catch (e) {
                 alert(`Ошибка удаления: ${e.message}`);
             } finally {
@@ -338,7 +324,7 @@ async function manageParticipants(meetingId, reloadCallback) {
 
         // 🔥 3. Функция единичного УДАЛЕНИЯ
         const removeSingleParticipant = async (username) => {
-            const confirmed = confirm(`Вы уверены, что хотите удалить пользователя "${username}" из этой встречи?`);
+            const confirmed = confirm(`Удалить пользователя "${username}" из этой встречи?`);
             if (!confirmed) return;
 
             const removeBtn = wrap.querySelector(`.remove-single-btn[data-username="${CSS.escape(username)}"]`);
@@ -348,15 +334,11 @@ async function manageParticipants(meetingId, reloadCallback) {
             }
 
             try {
-                await del(`/v1/meetings/${meetingId}/participants`, {
-                    participants: [{ username }]
-                });
-
+                await del(`/v1/meetings/${meetingId}/participants`, { participants: [{ username }] });
                 currentParticipants = currentParticipants.filter(p => p.username !== username);
                 showNotification(`Пользователь "${username}" удалён`, 'success');
                 renderContent();
                 if (typeof reloadCallback === 'function') await reloadCallback();
-
             } catch (e) {
                 alert(`Ошибка удаления: ${e.message}`);
                 if (removeBtn) {
@@ -366,7 +348,7 @@ async function manageParticipants(meetingId, reloadCallback) {
             }
         };
 
-        // 🔥 4. Функция фильтрации
+        // 🔥 4. Вспомогательные функции
         const filterUsers = (users, query) => {
             if (!query.trim()) return users;
             const lowerQuery = query.toLowerCase();
@@ -376,7 +358,6 @@ async function manageParticipants(meetingId, reloadCallback) {
             );
         };
 
-        // 🔥 5. Функция подсветки
         const highlightText = (text, query) => {
             if (!query.trim()) return escapeHtml(text);
             const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
@@ -385,142 +366,158 @@ async function manageParticipants(meetingId, reloadCallback) {
 
         const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // 🔥 6. Функция отрисовки
+        // 🔥 5. Функция отрисовки (с табами, но с оригинальной структурой)
         const renderContent = () => {
             const existingUsernames = new Set(currentParticipants.map(p => p.username));
             const allAvailableUsers = (allUsers || []).filter(u => !existingUsernames.has(u.username));
             const filteredUsers = filterUsers(allAvailableUsers, searchQuery);
 
+            // 🔥 Рендерим кнопки вкладок (инлайн-стили для 100% надежности)
             let html = `
-                <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Текущие участники (${currentParticipants.length})</h4>
-            `;
-
-            if (currentParticipants.length === 0) {
-                html += `<p class="empty-state-small">Пока никого нет</p>`;
-            } else {
-                html += `<div class="participants-list">`;
-                currentParticipants.forEach(p => {
-                    html += `
-                        <label class="checkbox-item remove-item">
-                            <input type="checkbox" class="remove-checkbox" value="${escapeHtml(p.username)}">
-                            <span>👤 ${escapeHtml(p.username)}</span>
-                            <button class="btn-sm btn-danger remove-single-btn" data-username="${escapeHtml(p.username)}">Удалить</button>
-                        </label>
-                    `;
-                });
-                html += `</div>
-                    <button id="remove-selected-btn" class="btn-danger btn-block" style="margin-top: 0.75rem;">
-                        Удалить выбранных
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0;">
+                    <button class="modal-tab-btn" data-tab="current" style="flex: 1; padding: 0.6rem; border: none; background: transparent; border-bottom: 3px solid ${currentModalTab === 'current' ? '#2563eb' : 'transparent'}; color: ${currentModalTab === 'current' ? '#2563eb' : '#64748b'}; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Текущие (${currentParticipants.length})
                     </button>
-                `;
-            }
-
-            html += `
-                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
-                <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Добавить участников</h4>
+                    <button class="modal-tab-btn" data-tab="add" style="flex: 1; padding: 0.6rem; border: none; background: transparent; border-bottom: 3px solid ${currentModalTab === 'add' ? '#2563eb' : 'transparent'}; color: ${currentModalTab === 'add' ? '#2563eb' : '#64748b'}; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Добавить
+                    </button>
+                </div>
             `;
 
-            if (allAvailableUsers.length === 0) {
-                html += `<p class="empty-state-small">Все пользователи системы уже добавлены</p>`;
-            } else {
-                html += `
-                    <div class="search-container">
-                        <input 
-                            type="text" 
-                            id="user-search" 
-                            class="search-input" 
-                            placeholder="🔍 Поиск по имени или username..."
-                            value="${escapeHtml(searchQuery)}"
-                        >
-                        <span class="search-count">${filteredUsers.length} из ${allAvailableUsers.length}</span>
-                    </div>
-                `;
-
-                if (filteredUsers.length === 0) {
-                    html += `<p class="empty-state-small">Ничего не найдено</p>`;
+            // 🔥 Содержимое вкладки "Текущие" (оригинальная структура)
+            if (currentModalTab === 'current') {
+                html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Список участников</h4>`;
+                
+                if (currentParticipants.length === 0) {
+                    html += `<p class="empty-state-small">Пока никого нет</p>`;
                 } else {
-                    html += `<div class="available-users-list">`;
-                    filteredUsers.forEach(u => {
+                    html += `<div class="participants-list">`;
+                    currentParticipants.forEach(p => {
                         html += `
-                            <label class="checkbox-item">
-                                <input type="checkbox" class="add-checkbox" value="${escapeHtml(u.username)}">
-                                <span>
-                                    ${highlightText(u.username, searchQuery)} 
-                                    <small style="color: #64748b;">(${highlightText(u.full_name || 'Без имени', searchQuery)})</small>
-                                </span>
+                            <label class="checkbox-item remove-item">
+                                <input type="checkbox" class="remove-checkbox" value="${escapeHtml(p.username)}">
+                                <span>👤 ${escapeHtml(p.username)}</span>
+                                <button class="btn-sm btn-danger remove-single-btn" data-username="${escapeHtml(p.username)}">Удалить</button>
                             </label>
                         `;
                     });
                     html += `</div>
-                        <button id="add-selected-btn" class="btn-primary btn-block" style="margin-top: 1rem;">
-                            Добавить выбранных
+                        <button id="remove-selected-btn" class="btn-danger btn-block" style="margin-top: 0.75rem;">
+                            Удалить выбранных
                         </button>
                     `;
+                }
+            } 
+            // 🔥 Содержимое вкладки "Добавить" (оригинальная структура)
+            else {
+                html += `<h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem;">Добавить участников</h4>`;
+
+                if (allAvailableUsers.length === 0) {
+                    html += `<p class="empty-state-small">Все пользователи системы уже добавлены</p>`;
+                } else {
+                    html += `
+                        <div class="search-container" style="margin-bottom: 0.75rem;">
+                            <input 
+                                type="text" 
+                                id="user-search" 
+                                class="search-input" 
+                                placeholder="🔍 Поиск по имени или username..."
+                                value="${escapeHtml(searchQuery)}"
+                            >
+                            <span class="search-count">${filteredUsers.length} из ${allAvailableUsers.length}</span>
+                        </div>
+                    `;
+
+                    if (filteredUsers.length === 0) {
+                        html += `<p class="empty-state-small">Ничего не найдено</p>`;
+                    } else {
+                        html += `<div class="available-users-list">`;
+                        filteredUsers.forEach(u => {
+                            html += `
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="add-checkbox" value="${escapeHtml(u.username)}">
+                                    <span>
+                                        ${highlightText(u.username, searchQuery)} 
+                                        <small style="color: #64748b;">(${highlightText(u.full_name || 'Без имени', searchQuery)})</small>
+                                    </span>
+                                </label>
+                            `;
+                        });
+                        html += `</div>
+                            <button id="add-selected-btn" class="btn-primary btn-block" style="margin-top: 1rem;">
+                                Добавить выбранных
+                            </button>
+                        `;
+                    }
                 }
             }
 
             wrap.innerHTML = html;
 
-            // 🔥 7. ЛОГИКА БЛОКИРОВКИ ЕДИНИЧНЫХ КНОПОК
-            const updateSingleDeleteButtons = () => {
-                const checkedCount = wrap.querySelectorAll('.remove-checkbox:checked').length;
-                const isMultipleSelected = checkedCount > 0;
-
-                wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
-                    btn.disabled = isMultipleSelected;
-                    if (isMultipleSelected) {
-                        btn.title = "Сначала снимите выделение или используйте кнопку 'Удалить выбранных'";
-                        btn.style.opacity = '0.5';
-                        btn.style.cursor = 'not-allowed';
-                    } else {
-                        btn.title = "Удалить этого участника";
-                        btn.style.opacity = '1';
-                        btn.style.cursor = 'pointer';
-                    }
-                });
-            };
-
-            // Навешиваем обработчик изменения чекбоксов
-            wrap.querySelectorAll('.remove-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', updateSingleDeleteButtons);
+            // 🔥 6. Обработчики переключения вкладок
+            wrap.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    currentModalTab = btn.dataset.tab;
+                    renderContent();
+                };
             });
 
-            // Вызываем сразу после отрисовки, чтобы установить начальное состояние
-            updateSingleDeleteButtons();
+            // 🔥 7. Логика блокировки единичных кнопок удаления (только для вкладки current)
+            if (currentModalTab === 'current') {
+                const updateSingleDeleteButtons = () => {
+                    const checkedCount = wrap.querySelectorAll('.remove-checkbox:checked').length;
+                    const isMultipleSelected = checkedCount > 0;
 
-            // 🔥 8. Остальные обработчики
-            const searchInput = document.getElementById('user-search');
-            if (searchInput) {
-                let debounceTimer;
-                searchInput.addEventListener('input', (e) => {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(() => {
-                        searchQuery = e.target.value;
-                        renderContent();
-                        const newSearchInput = document.getElementById('user-search');
-                        if (newSearchInput) {
-                            newSearchInput.focus();
-                            newSearchInput.setSelectionRange(newSearchInput.value.length, newSearchInput.value.length);
-                        }
-                    }, 300);
+                    wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
+                        btn.disabled = isMultipleSelected;
+                        btn.style.opacity = isMultipleSelected ? '0.5' : '1';
+                        btn.style.cursor = isMultipleSelected ? 'not-allowed' : 'pointer';
+                        btn.title = isMultipleSelected ? "Сначала снимите выделение" : "Удалить этого участника";
+                    });
+                };
+
+                wrap.querySelectorAll('.remove-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSingleDeleteButtons);
                 });
+                updateSingleDeleteButtons();
             }
 
+            // 🔥 8. Обработчик поиска (только для вкладки add)
+            if (currentModalTab === 'add') {
+                const searchInput = document.getElementById('user-search');
+                if (searchInput) {
+                    let debounceTimer;
+                    searchInput.addEventListener('input', (e) => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            searchQuery = e.target.value;
+                            renderContent();
+                            const newSearchInput = document.getElementById('user-search');
+                            if (newSearchInput) {
+                                newSearchInput.focus();
+                                newSearchInput.setSelectionRange(newSearchInput.value.length, newSearchInput.value.length);
+                            }
+                        }, 300);
+                    });
+                }
+            }
+
+            // 🔥 9. Обработчики кнопок действий
             const addBtn = document.getElementById('add-selected-btn');
             if (addBtn) addBtn.onclick = addParticipants;
 
             const removeBtn = document.getElementById('remove-selected-btn');
             if (removeBtn) removeBtn.onclick = removeParticipants;
 
-            // Обработчики единичного удаления
             wrap.querySelectorAll('.remove-single-btn').forEach(btn => {
                 btn.onclick = async (e) => {
-                    e.preventDefault(); // Предотвращаем срабатывание чекбокса при клике на кнопку
+                    e.preventDefault();
                     await removeSingleParticipant(btn.dataset.username);
                 };
             });
         };
 
+        // Первичная отрисовка
         renderContent();
 
     } catch (e) {

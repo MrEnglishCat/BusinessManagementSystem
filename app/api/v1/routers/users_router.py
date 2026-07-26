@@ -16,7 +16,7 @@ users_router = APIRouter(prefix="/users", tags=["Users"])
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def get_users(
+async def get_all_users(
     session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
 ):
@@ -24,12 +24,27 @@ async def get_users(
     return ResponseFactory.ok(data=users)
 
 
+@users_router.get(
+    "/without_teams",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+)
+async def get_users_without_teams(
+    session: AsyncSession = Depends(get_async_session),
+    user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
+):
+    users = await user_service.get_users_without_teams(session=session)
+    if users:
+        return ResponseFactory.ok(data=users)
+    return ResponseFactory.ok()
+
+
 @users_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=BaseResponse,
 )
-async def post_users(
+async def create_users(
     user: UserCreateSchema,
     session: AsyncSession = Depends(get_async_session),
     user_service: BaseService = Depends(get_service_dependency(ServiceTypeEnum.USER)),
@@ -84,7 +99,7 @@ async def delete_user_by_id(
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
 )
-async def patch_user_by_id(
+async def update_user_by_id(
     user: UserBaseSchema,
     user_id: int = Path(),
     session: AsyncSession = Depends(get_async_session),

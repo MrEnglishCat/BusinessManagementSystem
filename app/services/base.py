@@ -36,8 +36,8 @@ class BaseService(ABC):
         result = await self.repository.delete(session=session, **filter_by)
         return result
 
-    async def delete_all(self, session: AsyncSession):
-        result = await self.repository.delete_all(session=session)
+    async def delete_all(self, session: AsyncSession, **filter_by):
+        result = await self.repository.delete_all(session=session, **filter_by)
         return result
 
     async def update(self, session: AsyncSession, id: int, **values):

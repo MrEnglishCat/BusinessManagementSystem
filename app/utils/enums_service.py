@@ -11,7 +11,7 @@ class ServiceTypeEnum(StrEnum):
     INVITE = "invite"
 
 
-class MeetingStatusEmun(StrEnum):
+class MeetingStatusEnum(StrEnum):
     PLANNED = "planned"  # только что создана, указано время
     CANCELED = "canceled"  # отменена
     COMPLETED = "completed"  # завершеная встреча, или прошло время
@@ -24,3 +24,10 @@ class UserRole(StrEnum):
     USER = "user"
     MANAGER = "manager"
     ADMIN = "admin"
+
+
+class TaskStatus(StrEnum):
+    OPEN = "open"
+    IN_PROGRES = "in_progress"
+    COMPLETED = "completed"
+    CREATE = "create"

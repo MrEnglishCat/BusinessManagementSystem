@@ -27,4 +27,13 @@ class TeamLinkUserSchema(BasePydanticModel):
     )
 
 
-2
+class AddMembersPayload(BasePydanticModel):
+    usernames: list[str] = Field(
+        min_length=1,
+    )
+
+
+class DeleteMembersPayload(AddMembersPayload):
+    usernames: list[str] = Field(
+        min_length=1,
+    )

@@ -28,3 +28,4 @@ class AverageEvaluationResponseSchema(BasePydanticModel):
     id: int
     username: str
     avg_score: float
+    evaluations_count: int

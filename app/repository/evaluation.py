@@ -16,6 +16,7 @@ class EvaluationRepository(BaseRepository):
                 UserModel.id,
                 UserModel.username,
                 func.avg(self.model.score).label("avg_score"),
+                func.count(self.model.score).label("evaluations_count"),
             )
             .join(self.model, self.model.employee_id == UserModel.id)
             .where(

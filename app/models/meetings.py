@@ -18,7 +18,7 @@ from sqlalchemy import (
 from typing import TYPE_CHECKING
 from enum import StrEnum
 
-from ..utils.enums_service import MeetingStatusEmun
+from ..utils.enums_service import MeetingStatusEnum
 
 if TYPE_CHECKING:
     from . import TeamModel, UserModel
@@ -53,9 +53,12 @@ class MeetingModel(BaseAlchemyModel):
     end_time: Mapped[DateTime | None] = mapped_column(
         DateTime(timezone=True),
     )
-    location: Mapped[str] = mapped_column(String(255))
+    location: Mapped[str | None] = mapped_column(String(255))
     created_by: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=False
+        Integer,
+        ForeignKey(
+            "users.id",
+        ),
     )
     team_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("teams.id", ondelete="SET NULL")
@@ -71,8 +74,8 @@ class MeetingModel(BaseAlchemyModel):
         onupdate=lambda: datetime.now(UTC),
     )
     status: Mapped[StrEnum] = mapped_column(
-        Enum(MeetingStatusEmun),
-        default=MeetingStatusEmun.PLANNED,
+        Enum(MeetingStatusEnum),
+        default=MeetingStatusEnum.PLANNED,
         nullable=False,
     )
     cancellation_reason: Mapped[str | None] = mapped_column(Text)
@@ -80,7 +83,7 @@ class MeetingModel(BaseAlchemyModel):
         DateTime(timezone=True),
     )
     canceled_by: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL")
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
     # Relationships

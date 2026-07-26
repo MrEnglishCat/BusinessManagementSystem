@@ -25,7 +25,7 @@ class TeamService(BaseService):
     async def add(self, session: AsyncSession, **values):
 
         new_team = await super().add(session, **values)
-        return TeamResponseSchema.model_validate(new_team)
+        return True
 
     async def update(
         self,
@@ -47,5 +47,23 @@ class TeamService(BaseService):
                 UserResponseSchema.model_validate(team_member)
                 for team_member in team.members
             ]
+
+        return None
+
+    async def add_members(self, session: AsyncSession, team_id: int, members: list):
+        team = await self.repository.add_members(
+            session=session, team_id=team_id, members=members
+        )
+        if team:
+            return True
+
+        return None
+
+    async def delete_members(self, session: AsyncSession, team_id: int, members: list):
+        team = await self.repository.delete_members(
+            session=session, team_id=team_id, members=members
+        )
+        if team:
+            return True
 
         return None

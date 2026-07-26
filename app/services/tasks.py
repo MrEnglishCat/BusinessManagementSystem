@@ -4,15 +4,14 @@ from ..schemas import (
     TaskResponseSchema,
     TaskCommentResponseSchema,
     TaskCommentCreateSchema,
+    TaskIDSchema,
 )
 
 
 class TaskService(BaseService):
 
     async def get_all(self, session: AsyncSession):
-        tasks = await super().get_all(session)
-
-        #
+        tasks = await self.repository.get_all(session=session)
         if tasks:
             return [TaskResponseSchema.model_validate(task) for task in tasks]
         return None
@@ -22,21 +21,19 @@ class TaskService(BaseService):
         session: AsyncSession,
         **filter_by,
     ):
-        task = await super().get_one(session, **filter_by)
+        task = await self.repository.select_one(session=session, **filter_by)
         if task:
             return TaskResponseSchema.model_validate(task)
         return None
 
     async def add(self, session: AsyncSession, **values):
-
         new_task = await super().add(session, **values)
-
-        return TaskResponseSchema.model_validate(new_task)
+        return new_task
 
     async def update(self, session, id, **values):
         update_task = await super().update(session, id, **values)
         if update_task:
-            return TaskResponseSchema.model_validate(update_task)
+            return True
         return None
 
 
@@ -63,7 +60,7 @@ class TaskCommentService(BaseService):
 
     async def add(self, session: AsyncSession, **values):
         new_task_comment = await super().add(session, **values)
-        return TaskCommentResponseSchema.model_validate(new_task_comment)
+        return new_task_comment
 
     async def update(self, session, id, **values):
         update_task_comment = await super().update(session, id, **values)

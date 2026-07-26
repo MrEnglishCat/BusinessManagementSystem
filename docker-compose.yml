@@ -1,0 +1,79 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: bms-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bms_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bms_password}
+      POSTGRES_DB: ${POSTGRES_DB:-business_management}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bms_user} -d ${POSTGRES_DB:-business_management}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bms-network
+
+  # Backend (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: bms-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bms_user}:${POSTGRES_PASSWORD:-bms_password}@postgres:5432/${POSTGRES_DB:-business_management}
+      DATABASE_URL_SYNC: postgresql://${POSTGRES_USER:-bms_user}:${POSTGRES_PASSWORD:-bms_password}@postgres:5432/${POSTGRES_DB:-business_management}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-bms_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-bms_password}
+      BMS_DB_NAME: ${POSTGRES_DB:-business_management}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bms-network
+
+  # Frontend (Static Files)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bms-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/usr/src/app
+    depends_on:
+      - backend
+    networks:
+      - bms-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bms-network:
+    driver: bridge
