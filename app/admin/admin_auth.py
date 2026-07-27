@@ -2,17 +2,14 @@ from fastapi import Request
 from pydantic_core import ValidationError
 from starlette_admin.auth import AdminUser, AuthProvider
 from starlette.requests import Request
-from starlette.responses import Response
 from starlette_admin.exceptions import LoginFailed
 
 from app.config.db import async_session_maker
 from app.dependencies.service import get_service
-from app.services.users import UserService
 from app.utils.enums_service import ServiceTypeEnum, UserRole
 from app.schemas.users.users import LoginSchema, UserResponseSchema
-from argon2 import PasswordHasher
 
-from app.utils.passwd import get_password_hash, verify_password
+from app.utils.passwd import verify_password
 
 
 class WebAuthProvider(AuthProvider):
@@ -33,7 +30,7 @@ class WebAuthProvider(AuthProvider):
                 raise LoginFailed("Username or password is invalid")
             if not verify_password(
                 hash_password=user_from_db.hashed_password,
-                password=password,  # FIXME AttributeError: 'SecretStr' object has no attribute 'encode'
+                password=password,
             ):
                 raise LoginFailed("Username or password is invalid")
         user = UserResponseSchema.model_validate(user_from_db)

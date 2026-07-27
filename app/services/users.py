@@ -5,7 +5,6 @@ from ..schemas import (
     UserResponseSchema,
     MeetingResponseSchema,
     EvaluationResponseSchema,
-    TeamResponseSchema,
     UserResponseAllUsersSchema,
 )
 
@@ -13,7 +12,7 @@ from ..schemas import (
 class UserService(BaseService):
 
     async def get_users_without_teams(self, session: AsyncSession):
-        users = await self.repository.get_users_without_teams(session=session)
+        users = await self._repository.get_users_without_teams(session=session)
 
         if users:
             return [UserResponseSchema.model_validate(user) for user in users]
@@ -31,10 +30,9 @@ class UserService(BaseService):
 
     async def get_all(self, session: AsyncSession):
 
-        users = await self.repository.get_all_with_teams(session=session)
+        users = await self._repository.get_all_with_teams(session=session)
 
         if users:
-            # return [UserResponseSchema.model_validate(user) for user in users]
             return [UserResponseAllUsersSchema.model_validate(user) for user in users]
         return None
 
@@ -61,7 +59,9 @@ class UserService(BaseService):
         return None
 
     async def get_user_meetings(self, session: AsyncSession, user_id: int):
-        user = await self.repository.get_user_meetings(session=session, user_id=user_id)
+        user = await self._repository.get_user_meetings(
+            session=session, user_id=user_id
+        )
         if user and user.meetings:
             return [
                 MeetingResponseSchema.model_validate(user_meeting)
@@ -70,7 +70,7 @@ class UserService(BaseService):
         return None
 
     async def get_user_evaluations(self, session: AsyncSession, user_id: int):
-        user = await self.repository.get_user_evaluations(
+        user = await self._repository.get_user_evaluations(
             session=session, user_id=user_id
         )
         if user and user.team:
@@ -81,4 +81,4 @@ class UserService(BaseService):
         return None
 
     async def bulk_delete(self, session: AsyncSession):
-        await self.repository.bulk_delete(session=session)
+        await self._repository.bulk_delete(session=session)

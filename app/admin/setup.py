@@ -7,16 +7,6 @@ from app.models.meetings import MeetingModel
 from app.models.tasks import TaskCommentModel, TaskModel
 from app.models.teams import TeamModel
 from app.models.users import UserModel
-from app.schemas.evaluation import EvaluationBaseSchema, EvaluationResponseSchema
-from app.schemas.meetings import MeetingBaseSchema, MeetingResponseSchema
-from app.schemas.tasks import (
-    TaskBaseSchema,
-    TaskCommentBaseSchema,
-    TaskCommentResponseSchema,
-    TaskResponseSchema,
-)
-from app.schemas.teams import TeamBaseSchema, TeamResponseSchema
-from app.schemas.users.users import UserBaseSchema, UserCreateSchema, UserResponseSchema
 
 from starlette_admin.contrib.sqla import Admin
 from .views import (
