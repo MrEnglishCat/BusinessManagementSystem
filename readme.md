@@ -211,7 +211,7 @@ python -m http.server 8080
 
 ## 📄 Лицензия
 
-MIT License — см. файл [LICENSE](LICENSE) для подробностей.
+MIT License
 
 ---
 
