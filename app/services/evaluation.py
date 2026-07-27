@@ -45,7 +45,7 @@ class EvaluationService(BaseService):
         self, session: AsyncSession, start_date: datetime, end_date: datetime
     ):
 
-        average_evaluations = await self.repository.average_evaluation(
+        average_evaluations = await self._repository.average_evaluation(
             session=session, start_date=start_date, end_date=end_date
         )
         if average_evaluations:

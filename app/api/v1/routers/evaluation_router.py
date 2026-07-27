@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Body, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from ....auth.config import current_active_user
-from ....config.response import ResponseFactory, BaseResponse, ResponseError
+from ....config.response import ResponseFactory, BaseResponse
 from ....config.db import get_async_session
 from ....schemas import EvaluationBaseSchema
 from ....dependencies.service import get_service_dependency

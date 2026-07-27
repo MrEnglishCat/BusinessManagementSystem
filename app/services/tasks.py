@@ -3,15 +3,13 @@ from .base import BaseService
 from ..schemas import (
     TaskResponseSchema,
     TaskCommentResponseSchema,
-    TaskCommentCreateSchema,
-    TaskIDSchema,
 )
 
 
 class TaskService(BaseService):
 
     async def get_all(self, session: AsyncSession):
-        tasks = await self.repository.get_all(session=session)
+        tasks = await self._repository.get_all(session=session)
         if tasks:
             return [TaskResponseSchema.model_validate(task) for task in tasks]
         return None
@@ -21,7 +19,7 @@ class TaskService(BaseService):
         session: AsyncSession,
         **filter_by,
     ):
-        task = await self.repository.select_one(session=session, **filter_by)
+        task = await self._repository.select_one(session=session, **filter_by)
         if task:
             return TaskResponseSchema.model_validate(task)
         return None

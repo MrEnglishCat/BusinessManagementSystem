@@ -13,8 +13,6 @@ bms_app = FastAPI(title="BMS")
 
 def setup_exception_handlers(app: FastAPI):
 
-    # DEVELOPMENT добавить обработчик ошибок связанных с БД post едит ПРОДОЛЖИТЬ ТУТ. Решить вопрос с ошибками в пост и патч запросах при обновлении уникальных полей либо вводе значений внешних ключей, которых не существует.
-
     @app.exception_handler(IntegrityError)
     async def integrity_error_handler(request: Request, exc: IntegrityError):
         # Логируем полную ошибку для разработчиков
@@ -46,6 +44,6 @@ def setup_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=ResponseFactory.error(
-                message=f"Somthing wrong...exception:{exc.args}"  # DEVELOPMENT remove exception
+                message=f"Somthing wrong...exception:{exc.args}"
             ).model_dump(),
         )

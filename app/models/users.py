@@ -3,7 +3,6 @@ from fastapi import Request
 from jinja2 import Template
 
 from app.config.db import BaseAlchemyModel
-from enum import StrEnum
 from sqlalchemy import (
     Integer,
     String,

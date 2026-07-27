@@ -1,8 +1,8 @@
-from sqlalchemy import delete, update, select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from .base_repository import BaseRepository
-from ..models import UserModel, MeetingModel
+from ..models import UserModel
 
 
 class UserRepository(BaseRepository):

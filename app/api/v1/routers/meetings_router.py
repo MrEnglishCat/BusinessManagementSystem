@@ -124,9 +124,10 @@ async def cancel_meeting(
     meeting_service: BaseService = Depends(
         get_service_dependency(ServiceTypeEnum.MEETING)
     ),
+    current_user: UserModel = Depends(current_active_user),
 ):
     meeting = await meeting_service.cancel_meeting(
-        session=session, meeting=meeting_input
+        session=session, meeting=meeting_input, current_user=current_user
     )
     if meeting:
         return ResponseFactory.ok(data=meeting)

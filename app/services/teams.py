@@ -24,7 +24,7 @@ class TeamService(BaseService):
 
     async def add(self, session: AsyncSession, **values):
 
-        new_team = await super().add(session, **values)
+        await super().add(session, **values)
         return True
 
     async def update(
@@ -40,7 +40,7 @@ class TeamService(BaseService):
         return None
 
     async def get_members(self, session: AsyncSession, team_id: int):
-        team = await self.repository.get_members(session=session, team_id=team_id)
+        team = await self._repository.get_members(session=session, team_id=team_id)
 
         if team and team.members:
             return [
@@ -51,7 +51,7 @@ class TeamService(BaseService):
         return None
 
     async def add_members(self, session: AsyncSession, team_id: int, members: list):
-        team = await self.repository.add_members(
+        team = await self._repository.add_members(
             session=session, team_id=team_id, members=members
         )
         if team:
@@ -60,7 +60,7 @@ class TeamService(BaseService):
         return None
 
     async def delete_members(self, session: AsyncSession, team_id: int, members: list):
-        team = await self.repository.delete_members(
+        team = await self._repository.delete_members(
             session=session, team_id=team_id, members=members
         )
         if team:

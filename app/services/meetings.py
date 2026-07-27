@@ -5,16 +5,14 @@ from .base import BaseService
 from ..schemas import (
     MeetingResponseSchema,
     MeetingCancelSchema,
-    MeetingCreateSchema,
     MeetingParticipantUpdateSchema,
 )
-from ..repository import UserRepository
 
 
 class MeetingService(BaseService):
 
     async def get_all(self, session: AsyncSession):
-        meetings = await self.repository.get_all(session)
+        meetings = await self._repository.get_all(session)
         if meetings:
             return [
                 MeetingResponseSchema.model_validate(meeting) for meeting in meetings
@@ -22,7 +20,7 @@ class MeetingService(BaseService):
         return None
 
     async def get_all_canceled(self, session: AsyncSession):
-        meetings = await self.repository.get_all_canceled(session)
+        meetings = await self._repository.get_all_canceled(session)
         if meetings:
             return [
                 MeetingResponseSchema.model_validate(meeting) for meeting in meetings
@@ -43,7 +41,7 @@ class MeetingService(BaseService):
         meeting = meeting_create_schema.model_dump()
         meeting["created_by"] = current_user.id
         participants = [user.get("username") for user in meeting.pop("participants")]
-        new_meeting = await self.repository.insert(session, meeting, participants)
+        new_meeting = await self._repository.insert(session, meeting, participants)
         if new_meeting:
             return MeetingResponseSchema.model_validate(new_meeting)
         return None
@@ -54,9 +52,11 @@ class MeetingService(BaseService):
             return MeetingResponseSchema.model_validate(update_meeting)
         return None
 
-    async def cancel_meeting(self, session: AsyncSession, meeting: MeetingCancelSchema):
-        canceled_meeting_id = await self.repository.cancel_meeting(
-            session=session, meeting=meeting
+    async def cancel_meeting(
+        self, session: AsyncSession, meeting: MeetingCancelSchema, current_user
+    ):
+        canceled_meeting_id = await self._repository.cancel_meeting(
+            session=session, meeting=meeting, current_user=current_user
         )
         if canceled_meeting_id:
             return canceled_meeting_id
@@ -71,7 +71,7 @@ class MeetingService(BaseService):
         participants_username = [
             participant.username for participant in participants_schema.participants
         ]
-        db_result = await self.repository.add_paricipants(
+        db_result = await self._repository.add_paricipants(
             session=session,
             meeting_id=meeting_id,
             participants_username=participants_username,
@@ -89,7 +89,7 @@ class MeetingService(BaseService):
         participants_username = [
             participant.username for participant in participants_schema.participants
         ]
-        db_result = await self.repository.delete_paricipants(
+        db_result = await self._repository.delete_paricipants(
             session=session,
             meeting_id=meeting_id,
             participants_username=participants_username,

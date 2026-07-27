@@ -1,11 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
-from fastapi import Depends
-from app.config.db import get_async_session
 from app.repository import BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.schemas.tasks import TaskCommentResponseSchema
 
 
 class BaseService(ABC):
@@ -14,32 +10,32 @@ class BaseService(ABC):
         self,
         repository: BaseRepository,
     ):
-        self.repository = repository
+        self._repository = repository
 
     async def get_one(self, session: AsyncSession, **filter_by):
-        result = await self.repository.select_one(session=session, **filter_by)
+        result = await self._repository.select_one(session=session, **filter_by)
         return result
 
     async def get_all(self, session: AsyncSession):
-        result = await self.repository.select(session=session)
+        result = await self._repository.select(session=session)
         return result
 
     async def add(self, session: AsyncSession, **values):
-        result = await self.repository.insert(session=session, **values)
+        result = await self._repository.insert(session=session, **values)
         return result
 
     async def edit(self, session: AsyncSession, **values):
-        result = await self.repository.update(session=session, **values)
+        result = await self._repository.update(session=session, **values)
         return result
 
     async def delete(self, session: AsyncSession, **filter_by):
-        result = await self.repository.delete(session=session, **filter_by)
+        result = await self._repository.delete(session=session, **filter_by)
         return result
 
     async def delete_all(self, session: AsyncSession, **filter_by):
-        result = await self.repository.delete_all(session=session, **filter_by)
+        result = await self._repository.delete_all(session=session, **filter_by)
         return result
 
     async def update(self, session: AsyncSession, id: int, **values):
-        result = await self.repository.update(session=session, id=id, **values)
+        result = await self._repository.update(session=session, id=id, **values)
         return result

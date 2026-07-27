@@ -1,11 +1,9 @@
-import asyncio
 import random
 import secrets
 from datetime import datetime, timedelta, UTC
 from mimesis import Person, Address, Text, Datetime, Finance, Code
 from mimesis.locales import Locale
 from app.config.settings import settings
-import argon2
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (
     UserModel,

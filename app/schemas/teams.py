@@ -33,7 +33,4 @@ class AddMembersPayload(BasePydanticModel):
     )
 
 
-class DeleteMembersPayload(AddMembersPayload):
-    usernames: list[str] = Field(
-        min_length=1,
-    )
+class DeleteMembersPayload(AddMembersPayload): ...

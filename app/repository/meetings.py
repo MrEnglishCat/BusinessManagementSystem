@@ -22,7 +22,7 @@ class MeetingRepository(BaseRepository):
         result = await session.execute(stmt)
         return result.scalars().all()
 
-    async def cancel_meeting(self, session: AsyncSession, meeting: int):
+    async def cancel_meeting(self, session: AsyncSession, meeting, current_user):
         stmt = (
             update(self.model)
             .where(self.model.id == meeting.id)
@@ -31,7 +31,7 @@ class MeetingRepository(BaseRepository):
                     "status": MeetingStatusEnum.CANCELED,
                     "cancellation_reason": meeting.cancellation_reason,
                     "canceled_at": datetime.now(UTC),
-                    # "canceled_by": "current_user" # DEVELOPMENT
+                    "canceled_by": current_user.id,
                 }
             )
             .returning(self.model.id)

@@ -1,6 +1,6 @@
 from app.config.db import BaseAlchemyModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Integer, String, DateTime, TIMESTAMP
+from sqlalchemy import ForeignKey, Integer, String, DateTime
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from fastapi import Request

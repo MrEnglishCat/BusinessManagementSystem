@@ -1,14 +1,12 @@
 import re
 from typing import Optional
-from sqlalchemy.exc import IntegrityError, DataError, OperationalError
+from sqlalchemy.exc import IntegrityError
 
 from psycopg2.errors import (
     UniqueViolation,
     NotNullViolation,
     ForeignKeyViolation,
     CheckViolation,
-    StringDataRightTruncation,
-    NumericValueOutOfRange,
 )
 
 CONSTRAINT_MAP = {
